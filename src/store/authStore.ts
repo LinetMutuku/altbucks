@@ -1,78 +1,124 @@
-
-import {create} from "zustand";
+import { create } from "zustand";
 import axios from "axios";
 import { API_URL } from "@/lib/utils";
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/firebase/config';
 
-// Define type for API response
-type ApiResponse<T = any> = {
-    data: T;
-    status: number;
-    headers: Record<string, string>;
-}
-
-// Define type for user
-type User = {
+interface User {
     email: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    [key: string]: any; // For any additional properties
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    [key: string]: any;
 }
 
-// Define type for API error
-type ApiError = {
-    response?: {
-        data?: {
-            message?: string;
-        };
-    };
-    message: string;
-}
-
-type AuthResponse = {
-    user?: User;
-    newUser?: User;
-    message?: string;
-}
-
-type AuthStore = {
+interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
     error: string | null;
     isLoading: boolean;
-    message: string | null;
+    loginWithEmailAndPassword: (email: string, password: string) => Promise<void>;
+    loginWithGoogle: () => Promise<void>;
     signup: (email: string, password: string, firstName: string, lastName: string, phoneNumber: string, confirmPassword: string) => Promise<void>;
     signuptaskcreator: (email: string, password: string, firstName: string, lastName: string, phoneNumber: string, confirmPassword: string) => Promise<void>;
-    login: (email: string, password: string) => Promise<void>;
     profileAuth: () => Promise<void>;
-    forgotPassword: (email: string) => Promise<void>;
-    verifyToken: (resetCode: string, token: string) => Promise<void>;
-    resetPassword: (email: string, token: string, newPassword: string, confirmPassword: string) => Promise<void>;
+    logout: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     isAuthenticated: false,
     error: null,
     isLoading: false,
-    message: null,
+
+    loginWithEmailAndPassword: async (email: string, password: string) => {
+        set({ isLoading: true, error: null });
+        try {
+            const response = await axios.post(`${API_URL}/users/login`, {
+                email,
+                password
+            });
+
+            if (response.data) {
+                set({
+                    user: response.data.user || { email },
+                    isAuthenticated: true,
+                    error: null,
+                    isLoading: false
+                });
+
+                if (response.data.token) {
+                    localStorage.setItem('authToken', response.data.token);
+                }
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || "Failed to login";
+            set({
+                error: errorMessage,
+                isLoading: false,
+                isAuthenticated: false,
+                user: null
+            });
+            throw error;
+        }
+    },
+
+    loginWithGoogle: async () => {
+        set({ isLoading: true, error: null });
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            const userInfo = {
+                email: user.email!,
+                firstName: user.displayName?.split(' ')[0] || '',
+                lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+                photoURL: user.photoURL
+            };
+
+            set({
+                user: userInfo,
+                isAuthenticated: true,
+                error: null,
+                isLoading: false
+            });
+
+            const firebaseToken = await user.getIdToken();
+            localStorage.setItem('firebaseToken', firebaseToken);
+
+        } catch (error: any) {
+            console.error('Google login error:', error);
+            set({
+                error: error.message,
+                isLoading: false,
+                isAuthenticated: false,
+                user: null
+            });
+            throw error;
+        }
+    },
 
     signup: async (email, password, firstName, lastName, phoneNumber, confirmPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await axios.post<AuthResponse>(`${API_URL}/users/earn`, {
+            const { data } = await axios.post(`${API_URL}/users/earn`, {
                 email, password, firstName, lastName, phoneNumber, confirmPassword
             });
+
+            if (data.newUser) {
+                set({
+                    user: data.newUser,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                });
+            }
+        } catch (error: any) {
             set({
-                user: data.newUser || null,
-                isAuthenticated: true,
-                isLoading: false
-            });
-        } catch (error) {
-            const err = error as ApiError;
-            set({
-                error: err.response?.data?.message || "Error signing up",
-                isLoading: false
+                error: error.response?.data?.message || "Error signing up",
+                isLoading: false,
+                isAuthenticated: false,
+                user: null
             });
             throw error;
         }
@@ -81,42 +127,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
     signuptaskcreator: async (email, password, firstName, lastName, phoneNumber, confirmPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await axios.post<AuthResponse>(`${API_URL}/users/create`, {
+            const { data } = await axios.post(`${API_URL}/users/create`, {
                 email, password, firstName, lastName, phoneNumber, confirmPassword
             });
-            set({
-                user: data.newUser || null,
-                isAuthenticated: true,
-                isLoading: false
-            });
-        } catch (error) {
-            const err = error as ApiError;
-            set({
-                error: err.response?.data?.message || "Error signing up",
-                isLoading: false
-            });
-            throw error;
-        }
-    },
 
-    login: async (email, password) => {
-        set({ isLoading: true, error: null });
-        try {
-            const { data } = await axios.post<AuthResponse>(`${API_URL}/users/login`, {
-                email,
-                password
-            });
+            if (data.newUser) {
+                set({
+                    user: data.newUser,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                });
+            }
+        } catch (error: any) {
             set({
-                isAuthenticated: true,
-                user: data.user || null,
-                error: null,
-                isLoading: false
-            });
-        } catch (error) {
-            const err = error as ApiError;
-            set({
-                error: err.response?.data?.message || "Error logging in",
-                isLoading: false
+                error: error.response?.data?.message || "Error signing up",
+                isLoading: false,
+                isAuthenticated: false,
+                user: null
             });
             throw error;
         }
@@ -125,82 +153,47 @@ export const useAuthStore = create<AuthStore>((set) => ({
     profileAuth: async () => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await axios.get<AuthResponse>(`${API_URL}/users/user-profile`);
-            set({
-                user: data.user || null,
-                isAuthenticated: true,
-                isLoading: false
-            });
+            const { data } = await axios.get(`${API_URL}/users/user-profile`);
+
+            if (data.user) {
+                set({
+                    user: data.user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                });
+            }
         } catch (error) {
             set({
                 error: null,
                 isAuthenticated: false,
-                isLoading: false
+                isLoading: false,
+                user: null
             });
         }
     },
 
-//     forgotPassword: async (email) => {
-//         set({ isLoading: true, error: null });
-//         try {
-//             const { data } = await axios.post<AuthResponse>(`${API_URL}/users/request`, {
-//                 email,
-//             });
-//             set({
-//                 message: data.message || null,
-//                 isLoading: false
-//             });
-//         } catch (error) {
-//             const err = error as ApiError;
-//             set({
-//                 error: err.response?.data?.message || "Error sending password reset email",
-//                 isLoading: false
-//             });
-//             throw error;
-//         }
-//     },
-//
-//     verifyToken: async (resetCode, token) => {
-//         set({ isLoading: true, error: null });
-//         try {
-//             const { data } = await axios.post<AuthResponse>(`${API_URL}/users/verify`, {
-//                 resetCode,
-//                 token
-//             });
-//             set({
-//                 message: data.message || null,
-//                 isLoading: false
-//             });
-//         } catch (error) {
-//             const err = error as ApiError;
-//             set({
-//                 error: err.response?.data?.message || "Error verifying token",
-//                 isLoading: false
-//             });
-//             throw error;
-//         }
-//     },
-//
-//     resetPassword: async (email, token, newPassword, confirmPassword) => {
-//         set({ isLoading: true, error: null });
-//         try {
-//             const { data } = await axios.post<AuthResponse>(`${API_URL}/users/reset`, {
-//                 email,
-//                 token,
-//                 newPassword,
-//                 confirmPassword
-//             });
-//             set({
-//                 message: data.message || null,
-//                 isLoading: false
-//             });
-//         } catch (error) {
-//             const err = error as ApiError;
-//             set({
-//                 error: err.response?.data?.message || "Error resetting password",
-//                 isLoading: false
-//             });
-//             throw error;
-//         }
-//     }
+    logout: async () => {
+        try {
+            try {
+                await auth.signOut();
+            } catch (e) {
+                console.log('Firebase logout error:', e);
+            }
+
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('firebaseToken');
+
+            set({
+                user: null,
+                isAuthenticated: false,
+                error: null,
+                isLoading: false
+            });
+        } catch (error: any) {
+            console.error('Logout error:', error);
+            set({ error: "Logout failed" });
+            throw error;
+        }
+    }
 }));

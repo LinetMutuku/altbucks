@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Trash2 } from "lucide-react"; // Changed from MoreVertical to Trash2
+import { X, Trash2 } from "lucide-react";
 import { useTaskStore } from "@/store/taskStore";
 import { toast } from 'react-toastify';
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
@@ -49,19 +49,12 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
 
     const handleDelete = async () => {
         try {
-            toast.info('Deleting task...', {
-                autoClose: false,
-                toastId: 'deleteTask'
-            });
-
             await deleteTask(task._id);
-            toast.dismiss('deleteTask');
             toast.success('Task deleted successfully');
             onClose();
             await fetchTasks();
         } catch (error) {
             console.error('Failed to delete task:', error);
-            toast.dismiss('deleteTask');
             toast.error('Failed to delete task');
         }
     };
@@ -96,7 +89,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
                         </div>
                     </div>
 
-                    {/* Rest of the content remains the same */}
+                    {/* Content */}
                     <div className="overflow-y-auto p-6 max-h-[calc(90vh-8rem)]">
                         <h2 className="text-xl font-semibold text-gray-900 mb-6">{task.title}</h2>
 
@@ -126,11 +119,6 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
 
                                 <div>
                                     <h4 className="text-gray-600 mb-2">Instructions:</h4>
-                                    <ol className="list-decimal ml-4 space-y-2">
-                                        <li className="text-gray-600 pl-1">Watch the video using the provided link.</li>
-                                        <li className="text-gray-600 pl-1">Fill out the feedback form with detailed responses to the questions asked.</li>
-                                        <li className="text-gray-600 pl-1">Ensure you complete the task before the deadline to receive your earnings.</li>
-                                    </ol>
                                 </div>
 
                                 {requirementsList.length > 0 && (

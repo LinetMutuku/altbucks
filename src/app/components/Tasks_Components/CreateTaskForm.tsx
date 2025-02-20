@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react";
@@ -18,65 +19,58 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
     const [location, setLocation] = useState("");
     const [deadline, setDeadline] = useState("");
     const [requirements, setRequirements] = useState("");
-    const [additionalInfo, setAdditionalInfo] = useState<File | null>(null);
+    const [files, setFiles] = useState<File | null>(null);
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState<string>("");
     const [currency, setCurrency] = useState<string>("USD");
+    const [noOfRespondents, setNoOfRespondents] = useState<string>("")
     const [loading, setLoading] = useState(false);
 
     const handleModalClose = () => setModalOpen(false);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            setAdditionalInfo(e.target.files[0]);
+            setFiles(e.target.files[0]);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
         if (isNaN(Number(amount)) || Number(amount) <= 0) {
             toast.error("Please enter a valid compensation amount.");
             setLoading(false);
             return;
         }
-
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("requirements", requirements);
+        formData.append("description", description);
+        formData.append("compensation", JSON.stringify({ amount, currency }));
+        formData.append("noOfRespondents", noOfRespondents);
+        formData.append("deadline", deadline);
+        formData.append("link1", link1);
+        formData.append("taskType", taskType);
+        formData.append("location", location);
+        formData.append("link2", link2);
+        // Append file if it exists
+        if (files) {
+            formData.append("files", files);
+        }
         try {
             const response = await fetch("https://authentication-1-bqvg.onrender.com/tasks/create", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    title,
-                    taskType,
-                    description,
-                    location,
-                    compensation: {
-                        currency,
-                        amount: Number(amount),
-                    },
-                    deadline,
-                    requirements,
-                    additionalInfo,
-                    link1,
-                    link2
-                }),
+                body: formData,
             });
-
             if (!response.ok) {
                 throw new Error("Task creation failed");
             }
-
             const data = await response.json();
             toast.success("Task created successfully");
-
             // Fetch updated tasks and close modal
             await fetchTasks();
             onClose();
-
         } catch (error: any) {
             toast.error(error.message || "Something went wrong. Please try again.");
         } finally {
@@ -118,7 +112,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                     </p>
 
                     {/* Task Title and Type */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label htmlFor="taskTitle" className="block text-sm font-medium text-gray-700">
                                 Task Title
@@ -139,7 +133,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                             </label>
                             <select
                                 id="taskType"
-                                className="mt-1 p-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+                                className="mt-1 p-2 text-gray-500 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
                                 value={taskType}
                                 onChange={(e) => setTaskType(e.target.value)}
                                 required
@@ -148,6 +142,25 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                                 <option value="writing">Writing</option>
                                 <option value="review">Review</option>
                                 <option value="delivery">Delivery</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label htmlFor="numRespondents" className="block text-sm font-medium text-gray-700">
+                                No of Respondents
+                            </label>
+                            <select
+                                id="numRespondents"
+                                className="mt-1 p-2 border border-gray-300 text-gray-500 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+                                value={noOfRespondents}
+                                onChange={(e) => setNoOfRespondents(e.target.value)}
+                                required
+                            >
+                                <option value="">0-5</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
                             </select>
                         </div>
                     </div>
@@ -256,14 +269,14 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                                 htmlFor="fileUpload"
                                 className="cursor-pointer text-blue-500 hover:underline"
                             >
-                                {additionalInfo ? additionalInfo.name : "Upload a file or drag and drop"}
+                                {files ? files.name : "Upload a file or drag and drop"}
                             </label>
                             <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
                         </div>
-                        {additionalInfo && (
+                        {files && (
                             <div className="mt-4">
                                 <p className="text-sm text-gray-700">Selected File:</p>
-                                <p className="text-sm font-medium text-gray-900">{additionalInfo.name}</p>
+                                <p className="text-sm font-medium text-gray-900">{files.name}</p>
                             </div>
                         )}
                     </div>

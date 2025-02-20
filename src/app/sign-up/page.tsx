@@ -48,7 +48,7 @@ export default function Page() {
 
             clearTimeout(timeoutId);
             toast.success("Successfully signed up!");
-            router.push("/dashboard");
+            router.push("/log-in");
         } catch (error: any) {
             setLoading(false);
             toast.error(error.response?.data?.message || "Failed to sign up. Please try again.");

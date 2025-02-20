@@ -25,7 +25,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState("");
-    const [currency, setCurrency] = useState("USD");
+    const [currency, setCurrency] = useState({USD: true, EUR: false});
     const [noOfRespondents, setNoOfRespondents] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -236,7 +236,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
                             >
                                 <option value="">Select Location</option>
                                 <option value="Remote">Remote</option>
-                                <option value="On-site">On-site</option>
+                                <option value="Onsite">On-site</option>
                             </select>
                         </div>
 

@@ -1,13 +1,5 @@
-// firebase/config.ts
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-
-
-console.log('Firebase Config:', {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-});
-
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,6 +9,12 @@ const firebaseConfig = {
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
+
+// Add more robust error checking
+if (!firebaseConfig.apiKey) {
+    console.error('Firebase API Key is missing!');
+    throw new Error('Firebase configuration is incomplete');
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

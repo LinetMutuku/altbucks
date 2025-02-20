@@ -22,7 +22,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState<string>("");
-    const [currency, setCurrency] = useState<string>("USD");
+    const [currency, setCurrency] = useState({USD: true, EUR: false});
     const [noOfRespondents, setNoOfRespondents] = useState<string>("")
     const [loading, setLoading] = useState(false);
 
@@ -193,7 +193,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                             >
                                 <option value="">Select Your Location</option>
                                 <option value="Remote">Remote</option>
-                                <option value="On-site">On-site</option>
+                                <option value="Onsite">On-site</option>
                             </select>
                         </div>
                         <div>

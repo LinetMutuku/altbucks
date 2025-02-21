@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from '../components/Authentication/Header'
 import Image from 'next/image'
-import illustrationImg from "../../../public/assets/Illustration.png";
+import IllustrationImg from "../../../public/assets/Illustration.png";
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
@@ -24,11 +24,49 @@ export default function Page() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // Validation states
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
+
     const router = useRouter();
     const { signup } = useAuthStore();
 
+    // Validate email when it changes
+    useEffect(() => {
+        if (userData.email && !validateEmail(userData.email)) {
+            setEmailError("Please enter a valid email address");
+        } else {
+            setEmailError("");
+        }
+    }, [userData.email]);
+
+    // Validate password match when either password changes
+    useEffect(() => {
+        if (userData.confirmPassword && userData.password !== userData.confirmPassword) {
+            setPasswordError("Passwords don't match");
+        } else {
+            setPasswordError("");
+        }
+    }, [userData.password, userData.confirmPassword]);
+
+    const validateEmail = (email) => {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        if (!termsAccepted) {
+            toast.error("Please accept the Terms of Use and Privacy Policy");
+            return;
+        }
+
+        if (emailError || passwordError) {
+            toast.error("Please fix the errors before submitting");
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -63,7 +101,7 @@ export default function Page() {
                 <div className='text-white flex flex-col gap-6 lg:gap-8 w-full lg:w-[30%]'>
                     <h2 className='text-3xl lg:text-[48px] font-bold text-center lg:text-left'>Grow with us</h2>
                     <p className='font-light text-base lg:text-lg tracking-wide text-center lg:text-left'>Access to thousands to task project and clients</p>
-                    <Image src={illustrationImg} className='w-full max-w-md mx-auto lg:mx-0' alt='Illustration'/>
+                    <Image src={IllustrationImg} className='w-full max-w-md mx-auto lg:mx-0' alt='Illustration'/>
                 </div>
 
                 {/* Authentication Section */}
@@ -101,9 +139,10 @@ export default function Page() {
                                 id="email"
                                 type="email"
                                 onChange={(e) => setUserData({...userData, email: e.target.value})}
-                                className='w-full p-3 lg:p-3 border rounded-md border-gray-300 text-black text-base'
+                                className={`w-full p-3 lg:p-3 border rounded-md ${emailError ? 'border-red-500' : 'border-gray-300'} text-black text-base`}
                                 required
                             />
+                            {emailError && <p className='text-red-500 text-xs mt-1'>{emailError}</p>}
                         </div>
 
                         {/* Phone field */}
@@ -153,7 +192,7 @@ export default function Page() {
                                     id="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
                                     onChange={(e) => setUserData({...userData, confirmPassword: e.target.value})}
-                                    className='w-full p-3 lg:p-3 border rounded-md border-gray-300 text-black text-base'
+                                    className={`w-full p-3 lg:p-3 border rounded-md ${passwordError ? 'border-red-500' : 'border-gray-300'} text-black text-base`}
                                     placeholder="••••••••"
                                     required
                                 />
@@ -169,6 +208,7 @@ export default function Page() {
                                     )}
                                 </button>
                             </div>
+                            {passwordError && <p className='text-red-500 text-xs mt-1'>{passwordError}</p>}
                         </div>
 
                         {/* Terms checkbox */}
@@ -189,7 +229,7 @@ export default function Page() {
                         <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mt-2'>
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || emailError || passwordError}
                                 className='w-full sm:w-auto px-6 py-3 rounded-xl hover:bg-blue-800 transition-all duration-500 text-base bg-blue-600 text-white disabled:opacity-70 disabled:cursor-not-allowed'
                             >
                                 {loading ? (

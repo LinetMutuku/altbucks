@@ -15,6 +15,11 @@ export default function ResetPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Validation states
+    const [passwordError, setPasswordError] = useState("");
+    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
     const router = useRouter();
 
     useEffect(() => {
@@ -29,8 +34,47 @@ export default function ResetPasswordPage() {
         }
     }, []);
 
+    // Validate password strength
+    useEffect(() => {
+        if (password) {
+            if (password.length < 8) {
+                setPasswordError("Password must be at least 8 characters");
+            } else if (!/(?=.*[a-z])/.test(password)) {
+                setPasswordError("Password must include lowercase letters");
+            } else if (!/(?=.*[A-Z])/.test(password)) {
+                setPasswordError("Password must include uppercase letters");
+            } else if (!/(?=.*\d)/.test(password)) {
+                setPasswordError("Password must include numbers");
+            } else if (!/(?=.*[!@#$%^&*])/.test(password)) {
+                setPasswordError("Password must include special characters");
+            } else {
+                setPasswordError("");
+            }
+        } else {
+            setPasswordError("");
+        }
+    }, [password]);
+
+    // Validate password match
+    useEffect(() => {
+        if (confirmPassword) {
+            if (password !== confirmPassword) {
+                setConfirmPasswordError("Passwords don't match");
+            } else {
+                setConfirmPasswordError("");
+            }
+        } else {
+            setConfirmPasswordError("");
+        }
+    }, [password, confirmPassword]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (passwordError || confirmPasswordError) {
+            toast.error("Please fix the errors before submitting");
+            return;
+        }
 
         if (password !== confirmPassword) {
             toast.error("Passwords do not match!");
@@ -103,8 +147,9 @@ export default function ResetPasswordPage() {
                                 <div className="relative">
                                     <input
                                         type={showPassword ? "text" : "password"}
-                                        className="w-full p-3 border rounded-lg border-gray-300 text-black text-sm
-                                                 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className={`w-full p-3 border rounded-lg ${
+                                            passwordError ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                        } text-black text-sm focus:outline-none focus:ring-2`}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
                                         required
@@ -122,6 +167,7 @@ export default function ResetPasswordPage() {
                                     </button>
                                 </div>
                                 <p className='text-xs text-gray-500 mt-1'>Use 8 or more characters with a mix of letters, numbers & symbols</p>
+                                {passwordError && <p className="text-red-500 text-xs mt-1">{passwordError}</p>}
                             </div>
 
                             {/* Confirm Password field */}
@@ -130,8 +176,9 @@ export default function ResetPasswordPage() {
                                 <div className="relative">
                                     <input
                                         type={showConfirmPassword ? "text" : "password"}
-                                        className="w-full p-3 border rounded-lg border-gray-300 text-black text-sm
-                                                 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className={`w-full p-3 border rounded-lg ${
+                                            confirmPasswordError ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                                        } text-black text-sm focus:outline-none focus:ring-2`}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         placeholder="••••••••"
                                         required
@@ -148,11 +195,12 @@ export default function ResetPasswordPage() {
                                         )}
                                     </button>
                                 </div>
+                                {confirmPasswordError && <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>}
                             </div>
 
                             <button
                                 type="submit"
-                                disabled={loading}
+                                disabled={loading || !!passwordError || !!confirmPasswordError}
                                 className="mt-4 w-full rounded-xl bg-[#2877EA] p-3 text-white font-medium
                                          hover:bg-blue-600 transition-all duration-300 transform
                                          hover:translate-y-[-2px] hover:shadow-xl active:translate-y-[1px]

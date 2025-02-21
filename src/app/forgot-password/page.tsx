@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from 'next/navigation'
 import Header from '../components/Authentication/Header'
 import Image from 'next/image'
@@ -8,14 +8,34 @@ import illustrationImg from "../../../public/assets/Illustration.png"
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
+    const [emailError, setEmailError] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    // Validate email when it changes
+    useEffect(() => {
+        if (email && !validateEmail(email)) {
+            setEmailError("Please enter a valid email address");
+        } else {
+            setEmailError("");
+        }
+    }, [email]);
+
+    const validateEmail = (email) => {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!email) {
             toast.error("Please enter your email");
+            return;
+        }
+
+        if (emailError) {
+            toast.error("Please enter a valid email address");
             return;
         }
 
@@ -96,15 +116,18 @@ export default function ForgotPasswordPage() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                         placeholder="Enter your email"
-                                        className='w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border
-                                                 border-gray-300 focus:ring-2 focus:ring-blue-500
-                                                 focus:border-blue-500 transition-all duration-200'
+                                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border
+                                                 ${emailError ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}
+                                                 transition-all duration-200`}
                                     />
+                                    {emailError && (
+                                        <p className="text-red-500 text-xs mt-1">{emailError}</p>
+                                    )}
                                 </div>
 
                                 <button
                                     type="submit"
-                                    disabled={loading}
+                                    disabled={loading || !!emailError}
                                     className='w-full py-3 sm:py-4 bg-[#2877EA] hover:bg-blue-600
                                              text-white rounded-xl font-semibold text-base sm:text-lg
                                              tracking-wide transition-all duration-300 transform

@@ -19,7 +19,7 @@ export default function Header() {
                     <Link href={"/dashboard"} className='text-sm tracking-wide'>Dashboard</Link>
                 </p>
                 <p className='text-sm text-gray-600 tracking-wide'>
-                    <Link href={"/task"}>Tasks</Link>
+                    <Link href={"/dashboard/task"}>Tasks</Link>
                 </p>
                 <p className='text-sm text-gray-600 tracking-wide'>
                     <Link href={"/wallet"}>My Wallet</Link>

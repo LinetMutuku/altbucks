@@ -25,6 +25,22 @@ interface AuthState {
     logout: () => Promise<void>;
 }
 
+// Create an axios instance with default config
+const api = axios.create({
+    baseURL: API_URL
+});
+
+// Add request interceptor to automatically add token to all requests
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        config.withCredentials = true;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     isAuthenticated: false,
@@ -63,6 +79,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
 
+
+
+
     loginWithGoogle: async () => {
         set({ isLoading: true, error: null });
         try {
@@ -75,6 +94,23 @@ export const useAuthStore = create<AuthState>((set) => ({
                 lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
                 photoURL: user.photoURL
             };
+
+            // Register the Google user with your backend
+            try {
+                const response = await api.post('/users/google-auth', {
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    uid: user.uid
+                });
+
+                if (response.data && response.data.token) {
+                    localStorage.setItem('authToken', response.data.token);
+                    document.cookie = `authToken=${response.data.token}; path=/; max-age=86400; SameSite=Strict`;
+                }
+            } catch (backendError) {
+                console.error('Backend registration after Google login failed:', backendError);
+            }
 
             set({
                 user: userInfo,
@@ -98,20 +134,28 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
 
+
+
+
     signup: async (email, password, firstName, lastName, phoneNumber, confirmPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await axios.post(`${API_URL}/users/earn`, {
+            const { data } = await api.post('/users/earn', {
                 email, password, firstName, lastName, phoneNumber, confirmPassword
             });
 
-            if (data.newUser) {
+            if (data) {
                 set({
-                    user: data.newUser,
+                    user: data,
                     isAuthenticated: true,
                     isLoading: false,
                     error: null
                 });
+
+                if (data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    document.cookie = `authToken=${data.token}; path=/; max-age=86400; SameSite=Strict`;
+                }
             }
         } catch (error: any) {
             set({
@@ -127,17 +171,22 @@ export const useAuthStore = create<AuthState>((set) => ({
     signuptaskcreator: async (email, password, firstName, lastName, phoneNumber, confirmPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await axios.post(`${API_URL}/users/create`, {
+            const { data } = await api.post('/users/create', {
                 email, password, firstName, lastName, phoneNumber, confirmPassword
             });
 
-            if (data.newUser) {
+            if (data) {
                 set({
-                    user: data.newUser,
+                    user: data,
                     isAuthenticated: true,
                     isLoading: false,
                     error: null
                 });
+
+                // if (data.token) {
+                //     localStorage.setItem('authToken', data.token);
+                //     document.cookie = `authToken=${data.token}; path=/; max-age=86400; SameSite=Strict`;
+                // }
             }
         } catch (error: any) {
             set({
@@ -150,11 +199,20 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
     },
 
+
     profileAuth: async () => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await axios.get(`${API_URL}/users/user-profile`);
+            // Get token from localStorage
+            const token = localStorage.getItem('authToken');
 
+            // Create request with token
+            const { data } = await axios.get(`${API_URL}/users/user-profile`, {
+                credentials:true,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             if (data.user) {
                 set({
                     user: data.user,
@@ -162,16 +220,26 @@ export const useAuthStore = create<AuthState>((set) => ({
                     isLoading: false,
                     error: null
                 });
+            } else {
+                set({
+                    error: "No user data found",
+                    isAuthenticated: false,
+                    isLoading: false,
+                    user: null
+                });
             }
         } catch (error) {
+            console.error('Profile fetch error:', error);
             set({
-                error: null,
+                error: error.response?.data?.message || "Failed to load profile",
                 isAuthenticated: false,
                 isLoading: false,
                 user: null
             });
         }
     },
+
+
 
     logout: async () => {
         try {
@@ -181,8 +249,12 @@ export const useAuthStore = create<AuthState>((set) => ({
                 console.log('Firebase logout error:', e);
             }
 
+            // Clear tokens
             localStorage.removeItem('authToken');
             localStorage.removeItem('firebaseToken');
+
+            // Clear cookie
+            document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
             set({
                 user: null,

@@ -1,92 +1,71 @@
+"use client";
+
 import React from 'react';
 
 const TaskSummaryCard = () => {
   return (
-    <div className="bg-white rounded-lg p-4 lg:w-[450px] md:w-[900px] 
-    lg:h-[500px] font-mulish mx-6 border border-blue-600 hover:border-2
-     hover:border-blue-600 transition-all">
-      {/* Encapsulated Task Total and Chart */}
-      <div className="flex flex-col h-full justify-between relative">
-        {/* Task Total Section */}
-        <div className="w-full flex justify-between items-center pb-4 mt-5">
-          <div>
-            <h4 className="text-gray-500 text-sm font-medium">Task Total</h4>
-            <p className="text-3xl font-bold text-blue-900">178</p>
-          </div>
-          {/* Info Icon */}
-          <div className="text-gray-400 text-lg cursor-pointer">
-            <i className="fas fa-info-circle" title="Task Total Information"></i>
-          </div>
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-base font-semibold text-gray-900">Task Total</h3>
+          <span className="text-2xl font-bold text-[#2877EA]">178</span>
         </div>
 
-        {/* Chart Section */}
-        <div className="flex justify-between items-center mt-4 px-16 py-16">
-          {/* Chart */}
-          <div className="relative">
-            <svg viewBox="0 0 36 36" className="w-24 h-24">
-              {/* Background Circle */}
-              <circle
-                cx="18"
-                cy="18"
-                r="15.915"
+        {/* Progress Circle */}
+        <div className="relative w-full aspect-square max-w-[200px] mx-auto mb-6">
+          <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full">
+            {/* Completed Tasks - Green */}
+            <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="#22C55E"
+                strokeWidth="10"
                 fill="none"
-                stroke="#E4E4E4"
-                strokeWidth="2"
-              />
-              {/* Red Slice */}
-              <circle
-                cx="18"
-                cy="18"
-                r="15.915"
+                strokeDasharray="282.7"
+                strokeDashoffset="70.7"
+            />
+            {/* Pending Tasks - Blue */}
+            <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="#2877EA"
+                strokeWidth="10"
                 fill="none"
+                strokeDasharray="282.7"
+                strokeDashoffset="141.4"
+                strokeDashoffset="212.1"
+            />
+            {/* Cancelled Tasks - Red */}
+            <circle
+                cx="50"
+                cy="50"
+                r="45"
                 stroke="#EF4444"
-                strokeWidth="2"
-                strokeDasharray="53 47"
-                strokeDashoffset="25"
-              />
-              {/* Blue Slice */}
-              <circle
-                cx="18"
-                cy="18"
-                r="15.915"
+                strokeWidth="10"
                 fill="none"
-                stroke="#3B82F6"
-                strokeWidth="2"
-                strokeDasharray="43 57"
-                strokeDashoffset="78"
-              />
-              {/* Green Slice */}
-              <circle
-                cx="18"
-                cy="18"
-                r="15.915"
-                fill="none"
-                stroke="#10B981"
-                strokeWidth="2"
-                strokeDasharray="82 18"
-                strokeDashoffset="121"
-              />
-            </svg>
-          </div>
+                strokeDasharray="282.7"
+                strokeDashoffset="254.5"
+            />
+          </svg>
+        </div>
 
-          {/* Labels Section */}
-          <div className="flex flex-col space-y-2 ml-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <span className="text-gray-700 text-sm">Cancelled</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-gray-700 text-sm">Pending</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700 text-sm">Completed</span>
-            </div>
+        {/* Legend */}
+        <div className="flex justify-between items-center mt-4">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#22C55E]"></div>
+            <span className="text-sm text-gray-600">Completed</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#2877EA]"></div>
+            <span className="text-sm text-gray-600">Pending</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#EF4444]"></div>
+            <span className="text-sm text-gray-600">Cancelled</span>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

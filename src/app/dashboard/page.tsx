@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect } from "react";
@@ -39,7 +40,7 @@ export default function Dashboard() {
         }
     }, [user, router, profileAuth]);
 
-    const typedUser = user as User;
+
 
     return (
         <div className="min-h-screen w-full flex flex-col bg-white font-mulish overflow-x-hidden">
@@ -66,11 +67,11 @@ export default function Dashboard() {
                         </div>
 
                         {/* User Cards */}
-                        {user && (
-                            <div className="bg-white rounded-xl shadow-sm p-4">
-                                <UserCards user={typedUser} />
-                            </div>
-                        )}
+
+                        <div className="bg-white rounded-xl shadow-sm p-4">
+                            <UserCards />
+                        </div>
+
 
                         {/* Line Graph Section */}
                         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
@@ -93,11 +94,10 @@ export default function Dashboard() {
                     {/* Right Column */}
                     <div className="w-full lg:w-1/3 space-y-4 sm:space-y-6">
                         {/* Personal Profile */}
-                        {user && (
-                            <div className="bg-white rounded-xl shadow-sm">
-                                <PersonalProfile user={typedUser} />
-                            </div>
-                        )}
+                        <div className="bg-white rounded-xl shadow-sm">
+                            <PersonalProfile />
+                        </div>
+
 
                         {/* Task Summary */}
                         <div className="bg-white rounded-xl shadow-sm">

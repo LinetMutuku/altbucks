@@ -6,6 +6,69 @@ const ProfileInformation = ({ user }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
     const { updateUserProfile } = useAuthStore();
 
+    // Added predefined options for select fields
+    const expertiseCategories = [
+        "Social Media Management",
+        "Content Creation",
+        "Graphic Design",
+        "Developmemt",
+        "Writting",
+        "Review",
+        "Data Entry",
+        "Virtual Assistance",
+        "Customer Support",
+        "Content Writing",
+        "Translation",
+        "Web Research",
+        "Lead Generation",
+        "Email Marketing",
+        "Administrative Support",
+        "Transcription",
+        "Video Editing",
+        "SEO"
+    ];
+
+    const languages = [
+        "English",
+        "Spanish",
+        "French",
+        "German",
+        "Chinese (Mandarin)",
+        "Arabic",
+        "Portuguese",
+        "Russian",
+        "Japanese",
+        "Hindi",
+        "Swahili",
+        "Italian",
+        "Korean",
+        "Dutch",
+        "Swedish"
+    ];
+
+    const locations = [
+        "New York, USA",
+        "Los Angeles, USA",
+        "Chicago, USA",
+        "Houston, USA",
+        "Texas, USA",
+        "London, UK",
+        "Manchester, UK",
+        "Toronto, Canada",
+        "Sydney, Australia",
+        "Melbourne, Australia",
+        "Berlin, Germany",
+        "Paris, France",
+        "Madrid, Spain",
+        "Tokyo, Japan",
+        "Singapore",
+        "Mumbai, India",
+        "Nairobi, Kenya",
+        "Lagos, Nigeria",
+        "Cape Town, South Africa",
+        "Mexico City, Mexico"
+    ];
+
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -132,7 +195,10 @@ const ProfileInformation = ({ user }) => {
                 <label className='block text-sm font-medium mb-1'>Categories of Expertise</label>
                 <div className='relative'>
                     <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
-                        <option>Select Your Preferred Task Categories</option>
+                        <option value="">Select Your Preferred Task Categories</option>
+                        {expertiseCategories.map((category, index) => (
+                            <option key={index} value={category}>{category}</option>
+                        ))}
                     </select>
                     <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +213,10 @@ const ProfileInformation = ({ user }) => {
                 <label className='block text-sm font-medium mb-1'>Languages</label>
                 <div className='relative'>
                     <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
-                        <option>Languages Spoken</option>
+                        <option value="">Languages Spoken</option>
+                        {languages.map((language, index) => (
+                            <option key={index} value={language}>{language}</option>
+                        ))}
                     </select>
                     <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +231,10 @@ const ProfileInformation = ({ user }) => {
                 <label className='block text-sm font-medium mb-1'>Location</label>
                 <div className='relative'>
                     <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
-                        <option>Choose Your City and Country</option>
+                        <option value="">Choose Your City and Country</option>
+                        {locations.map((location, index) => (
+                            <option key={index} value={location}>{location}</option>
+                        ))}
                     </select>
                     <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

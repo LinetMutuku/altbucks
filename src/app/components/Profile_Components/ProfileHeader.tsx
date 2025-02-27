@@ -75,7 +75,7 @@ const ProfileHeader = ({ user }) => {
                 <div className='w-full grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12 sm:mt-24 px-4'>
                     <div className='px-4 sm:px-10 py-4 sm:py-6 rounded-md border border-gray-300 flex gap-3 sm:gap-5'>
                         <div className='w-fit h-fit p-2 sm:p-4 rounded-md bg-blue-100'>
-                            <AiTwotoneSchedule size={20} sm:size={25} color='blue' />
+                            <AiTwotoneSchedule size={20} className="sm:w-6 sm:h-6" color='blue' />
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Total Tasks</h4>
@@ -85,7 +85,7 @@ const ProfileHeader = ({ user }) => {
 
                     <div className='px-4 sm:px-10 py-4 sm:py-6 rounded-md border border-gray-300 flex gap-3 sm:gap-5'>
                         <div className='w-fit h-fit p-2 sm:p-4 rounded-md bg-green-100'>
-                            <FaDatabase size={20} sm:size={25} color='green' />
+                            <FaDatabase size={20} className="sm:w-6 sm:h-6" color='green' />
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Total Earnings</h4>
@@ -95,7 +95,7 @@ const ProfileHeader = ({ user }) => {
 
                     <div className='px-4 sm:px-10 py-4 sm:py-6 rounded-md border border-gray-300 flex gap-3 sm:gap-5'>
                         <div className='w-fit h-fit p-2 sm:p-4 rounded-md bg-orange-100'>
-                            <CiStar size={20} sm:size={25} color='orange' />
+                            <CiStar size={20} className="sm:w-6 sm:h-6" color='orange' />
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Average Rating</h4>
@@ -105,7 +105,7 @@ const ProfileHeader = ({ user }) => {
 
                     <div className='px-4 sm:px-10 py-4 sm:py-6 rounded-md border border-gray-300 flex gap-3 sm:gap-5'>
                         <div className='w-fit h-fit p-2 sm:p-4 rounded-md bg-green-100'>
-                            <BsFillPatchCheckFill size={20} sm:size={25} color='green' />
+                            <BsFillPatchCheckFill size={20} className="sm:w-6 sm:h-6" color='green' />
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Job Success Rate</h4>

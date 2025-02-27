@@ -1,60 +1,97 @@
-
-import React from 'react';
+"use client"
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import profileImg from "../../../../public/assets/Ellipse68.png";  // Import the image
+import profileImg from "../../../../public/assets/Ellipse68.png";
 import Link from 'next/link';
+import { useAuthStore } from '@/store/authStore';
+import axios from "axios";
+import { API_URL } from "@/lib/utils";
 
-interface User{
-  _id:number,
-  firstName:string,
-  email:string,
-  lastName:string,
-  phoneNumber:string,
-}
+const PersonalProfile = () => {
+  const { isAuthenticated } = useAuthStore();
+  const [profileData, setProfileData] = useState(null);
 
-interface UserCardProps{
-  user:User
-}
+  // Fetch profile data directly
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) return;
 
-const PersonalProfile: React.FC<UserCardProps> = ({user}) => {
+        const { data } = await axios.get(`${API_URL}/users/user-profile`, {
+          Credentials: true,
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        setProfileData(data.profile || data.user || null);
+      } catch (error) {
+        console.error("Profile fetch error:", error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (!profileData) return null;
+
+  // Calculate profile completion percentage
+  const calculateCompletion = () => {
+    let count = 0;
+    ['email', 'firstName', 'lastName', 'phoneNumber'].forEach(field => {
+      if (profileData[field]) count++;
+    });
+    if (profileData.photoURL || profileData.profilePicture) count++;
+
+    return Math.round((count / 5) * 100);
+  };
+
+  const profileCompletion = calculateCompletion();
+  const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
+
   return (
-      <div className="lg:w-[448px] md:w-[900px] lg:h-[440px] bg-white border border-blue-600 hover:border-2
-        hover:border-blue-600 transition-all rounded-lg px-6 py-10 flex flex-col items-center ml-6 sm:mr-2">
-        <div className="w-[323px] h-[259px] flex flex-col items-center gap-6 font-mulish">
-          {/* Avatar and Name Section */}
-          <div className="relative w-[161px] h-[160px] flex justify-center items-center">
-            {/* Avatar and Name Section */}
-            <div className="relative w-[161px] h-[160px] flex justify-center items-center">
-              {/* Circle background */}
-              <div className="absolute w-[80px] h-[80px] bg-[#51AF4E] rounded-full z-0"></div>
-
-              {/* Avatar Image */}
-              <Image
-                  src={profileImg} // Use the imported image URL
-                  alt="User Avatar"
-                  width={70}
-                  height={70}
-                  className="rounded-full z-10" // Ensure this is above the green background
-              />
-            </div>
-
-
-
-            {/* Name and ID */}
-            <div className="absolute top-[96px] text-center mt-5 flex flex-col gap-2">
-              <p className="text-2xl font-bold text-[#18181B] mt-5 font-mulish">{user?.firstName} {user?.lastName}</p>
-              <p className="text-base font-medium text-[#949396] font-mulish">ID: {user?._id}</p>
-              <div className="items-center justify-center py-1 px-3 bg-[#ECFDF3] font-mulish rounded-full text-sm font-medium text-[#0F8152]">
-                Online
-              </div>
-              <p className="text-center text-sm font-medium text-[#949396] mt-2">
-                Your profile is 80% complete. Finish setting up
-              </p>
-              <button className="w-[265px] h-[41px] bg-[#2877EA] rounded-lg font-mulish text-white text-sm font-medium flex justify-center items-center gap-2 mt-3">
-                <Link href={"/profile"}>View Profile</Link>
-              </button>
-            </div>
+      <div className="w-full bg-white rounded-xl shadow-sm p-4">
+        <div className="flex flex-col items-center">
+          {/* Avatar */}
+          <div className="relative w-24 h-24 flex justify-center items-center mb-4">
+            <div className="absolute w-20 h-20 bg-green-500 rounded-full opacity-20"></div>
+            <Image
+                src={profileData.photoURL || profileData.profilePicture || profileImg}
+                alt="User Profile"
+                width={70}
+                height={70}
+                className="rounded-full z-10"
+            />
           </div>
+
+          {/* User Info */}
+          <div className="text-center mb-3">
+            <h2 className="text-xl font-bold">{fullName}</h2>
+            <p className="text-sm text-gray-500 mb-2">ID: {profileData._id || 'Not available'}</p>
+            <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+            {isAuthenticated ? 'Online' : 'Offline'}
+          </span>
+          </div>
+
+          {/* Profile Completion */}
+          <div className="w-full mt-2 mb-4">
+            <div className="h-2 w-full bg-gray-200 rounded-full">
+              <div
+                  className="h-full bg-blue-500 rounded-full"
+                  style={{ width: `${profileCompletion}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Your profile is {profileCompletion}% complete.
+              {profileCompletion < 100 && ' Finish setting up'}
+            </p>
+          </div>
+
+          {/* View Profile Button */}
+          <Link href="/profile" className="w-full">
+            <button className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg">
+              View Profile
+            </button>
+          </Link>
         </div>
       </div>
   );

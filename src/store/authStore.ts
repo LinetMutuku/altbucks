@@ -25,21 +25,6 @@ interface AuthState {
     logout: () => Promise<void>;
 }
 
-// Create an axios instance with default config
-const api = axios.create({
-    baseURL: API_URL
-});
-
-// Add request interceptor to automatically add token to all requests
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-        config.withCredentials = true;
-    }
-    return config;
-}, (error) => {
-    return Promise.reject(error);
-});
 
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
@@ -50,7 +35,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     loginWithEmailAndPassword: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
+            const token = localStorage.getItem('authToken');
             const response = await axios.post(`${API_URL}/users/login`, {
+                credentials:true,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 email,
                 password
             });
@@ -97,7 +87,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
             // Register the Google user with your backend
             try {
-                const response = await api.post('/users/google-auth', {
+                const response = await axios.post('/users/google-auth', {
                     email: user.email,
                     displayName: user.displayName,
                     photoURL: user.photoURL,
@@ -140,7 +130,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     signup: async (email, password, firstName, lastName, phoneNumber, confirmPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await api.post('/users/earn', {
+            const { data } = await axios.post('/users/earn', {
                 email, password, firstName, lastName, phoneNumber, confirmPassword
             });
 
@@ -171,7 +161,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     signuptaskcreator: async (email, password, firstName, lastName, phoneNumber, confirmPassword) => {
         set({ isLoading: true, error: null });
         try {
-            const { data } = await api.post('/users/create', {
+            const { data } = await axios.post('/users/create', {
                 email, password, firstName, lastName, phoneNumber, confirmPassword
             });
 
@@ -203,26 +193,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     profileAuth: async () => {
         set({ isLoading: true, error: null });
         try {
-            // Get token from localStorage
             const token = localStorage.getItem('authToken');
 
-            // Create request with token
             const { data } = await axios.get(`${API_URL}/users/user-profile`, {
-                credentials:true,
+                Credentials: true,
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            if (data.user) {
+
+            // Extract user data from the response based on structure
+            const userData = data.profile || data.user || null;
+
+            if (userData) {
                 set({
-                    user: data.user,
+                    user: userData,
                     isAuthenticated: true,
                     isLoading: false,
                     error: null
                 });
             } else {
                 set({
-                    error: "No user data found",
+                    error: "No user data found in response",
                     isAuthenticated: false,
                     isLoading: false,
                     user: null
@@ -238,7 +230,6 @@ export const useAuthStore = create<AuthState>((set) => ({
             });
         }
     },
-
 
 
     logout: async () => {

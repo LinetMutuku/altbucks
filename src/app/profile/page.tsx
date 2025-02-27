@@ -1,104 +1,70 @@
-"use client"
-import React, { useEffect } from 'react';
-import Header from '../components/Profile_Components/Header';
-import { FaLocationPin, FaDatabase } from 'react-icons/fa6';
-import { AiTwotoneSchedule } from "react-icons/ai";
-import { CiStar } from "react-icons/ci";
-import { BsFillPatchCheckFill } from "react-icons/bs";
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import Header from "../components/User-Dashboard/Header";
+import ProfileHeader from '../components/Profile_Components/ProfileHeader';
+import ProfileInformation from '../components/Profile_Components/ProfileInformation';
+import AccountSettings from '../components/Profile_Components/AccountSettings';
 
 export default function ProfilePage() {
-    const { isAuthenticated, user, profileAuth } = useAuthStore();
+    const { user, profileAuth } = useAuthStore();
+    const [activeTab, setActiveTab] = useState('profile');
 
     useEffect(() => {
-        profileAuth()
-    }, [])
+        profileAuth();
+    }, [profileAuth]);
 
     return (
-        <div className='w-screen h-fit'>
-            <Header />
-            <div className='w-[90%] mx-auto flex flex-col gap-5 mt-8'>
-                {/* Top Section */}
-                <div className='w-full h-[200px] overflow-hidden relative rounded-2xl'>
-                    <img src={"./assets/92b9ff1824dfb796e7236321131c3140.jpeg"} className='w-full h-auto'/>
-                    <div className='absolute bg-blue-600 opacity-60 top-0 left-0 right-0 bottom-0'></div>
-                </div>
+        <div className='min-h-screen w-full flex flex-col bg-white font-mulish overflow-x-hidden'>
+            {/* Header with shadow for better visual hierarchy */}
+            <div className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-sm">
+                <Header />
+            </div>
 
-                {/* Main Section */}
-                <div className='w-full h-fit mt-8'>
-                    <div className='flex justify-between items-center'>
-                        <div className='flex flex-col gap-3 w-[600px]'>
-                            <h3 className='text-2xl font-semibold text-blue-500'>
-                                {user?.firstName} {user?.lastName}
-                            </h3>
-                            <p className='text-sm tracking-wide text-gray-500'>
-                                I specialize in social media management, graphic design, and data entry.
-                                Passionate about helping clients achieve their goals through efficient task completion.
-                            </p>
-                            <div className='text-blue-500 flex gap-3 items-center'>
-                                <FaLocationPin size={20}/>
-                                <p className='text-xs text-blue-500'>Texas, USA.</p>
-                            </div>
-                        </div>
-                        <div className='flex flex-col gap-3 w-[300px]'>
-                            <div className='flex bg-gray-300 rounded-md h-[10px] w-full'>
-                                <div className='bg-orange-500 h-full w-[200px] rounded-md'></div>
-                            </div>
-                            <p className='text-blue-500 text-sm'>Your Profile is <span>80%</span> complete</p>
-                        </div>
-                    </div>
+            <div className='container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-grow'>
+                <div className='w-full flex flex-col gap-5 mt-8'>
+                    {/* Profile Header Component */}
+                    <ProfileHeader user={user} />
 
-                    <div className='w-full h-[130px] flex justify-between mt-24'>
-                        <div className='w-[22%] h-full px-10 py-6 rounded-md border-gray-400 border flex gap-5'>
-                            <div className='w-fit h-fit p-4 rounded-md bg-blue-100'>
-                                <AiTwotoneSchedule
-                                    size={25}
-                                    color='blue'
-                                />
+                    {/* Tabs Section */}
+                    <div className='flex mt-12'>
+                        {/* Sidebar navigation */}
+                        <div className='w-1/4 pr-6'>
+                            <div
+                                className={`py-4 px-6 flex flex-col ${activeTab === 'profile' ? 'border-l-4 border-blue-500' : ''}`}
+                                onClick={() => setActiveTab('profile')}
+                                style={{cursor: 'pointer'}}
+                            >
+                                <h3 className={`font-medium ${activeTab === 'profile' ? 'text-blue-500' : 'text-gray-500'}`}>
+                                    Profile Information
+                                </h3>
+                                <p className='text-xs text-gray-500 mt-1'>
+                                    You can change your personal information settings here.
+                                </p>
                             </div>
-                            <div className='flex flex-col gap-3'>
-                                <h4 className='text-gray-400'>Total Tasks Completed</h4>
-                                <p className='text-4xl font-semibold text-black'>45</p>
+
+                            <div
+                                className={`py-4 px-6 flex flex-col ${activeTab === 'account' ? 'border-l-4 border-blue-500' : ''}`}
+                                onClick={() => setActiveTab('account')}
+                                style={{cursor: 'pointer'}}
+                            >
+                                <h3 className={`font-medium ${activeTab === 'account' ? 'text-blue-500' : 'text-gray-500'}`}>
+                                    Account Settings
+                                </h3>
+                                <p className='text-xs text-gray-500 mt-1'>
+                                    Change your Account Settings.
+                                </p>
                             </div>
                         </div>
 
-                        <div className='w-[22%] h-full px-10 py-6 rounded-md border-gray-400 border flex gap-5'>
-                            <div className='w-fit h-fit p-4 rounded-md bg-green-100'>
-                                <FaDatabase
-                                    size={25}
-                                    color='green'
-                                />
-                            </div>
-                            <div className='flex flex-col gap-3'>
-                                <h4 className='text-gray-400'>Total Earnings</h4>
-                                <p className='text-4xl font-semibold text-black'>$1500</p>
-                            </div>
-                        </div>
+                        {/* Content area for tabs */}
+                        <div className='w-3/4 bg-white p-6 border border-gray-200 rounded-lg'>
+                            {/* Profile Information Tab Content */}
+                            {activeTab === 'profile' && <ProfileInformation user={user} />}
 
-                        <div className='w-[22%] h-full px-10 py-6 rounded-md border-gray-400 border flex gap-5'>
-                            <div className='w-fit h-fit p-4 rounded-md bg-orange-100'>
-                                <CiStar
-                                    size={25}
-                                    color='orange'
-                                />
-                            </div>
-                            <div className='flex flex-col gap-3'>
-                                <h4 className='text-gray-400'>Average Rating</h4>
-                                <p className='text-4xl font-semibold text-black'>4.8/5</p>
-                            </div>
-                        </div>
-
-                        <div className='w-[22%] h-full px-10 py-6 rounded-md border-gray-400 border flex gap-5'>
-                            <div className='w-fit h-fit p-4 rounded-md bg-green-100'>
-                                <BsFillPatchCheckFill
-                                    size={25}
-                                    color='green'
-                                />
-                            </div>
-                            <div className='flex flex-col gap-3'>
-                                <h4 className='text-gray-400'>Job Success Rate</h4>
-                                <p className='text-4xl font-semibold text-black'>100%</p>
-                            </div>
+                            {/* Account Settings Tab Content */}
+                            {activeTab === 'account' && <AccountSettings />}
                         </div>
                     </div>
                 </div>

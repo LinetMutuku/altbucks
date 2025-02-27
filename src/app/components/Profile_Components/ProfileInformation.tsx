@@ -63,15 +63,17 @@ const ProfileInformation = ({ user }) => {
             setImagePreview(user?.photoURL || null);
         }
     };
+
     return (
-        <div>
-            <div className='flex justify-center mb-8'>
+        <div className='space-y-6'>
+            {/* Profile Picture Upload */}
+            <div className='flex justify-center mb-4 sm:mb-8'>
                 <div className='text-center'>
-                    <div className='w-24 h-24 bg-yellow-100 rounded-full mx-auto flex items-center justify-center overflow-hidden'>
+                    <div className='w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full mx-auto flex items-center justify-center overflow-hidden'>
                         {imagePreview ? (
                             <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <span className='text-3xl font-bold text-blue-700'>
+                            <span className='text-2xl sm:text-3xl font-bold text-blue-700'>
                                 {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
                             </span>
                         )}
@@ -85,14 +87,15 @@ const ProfileInformation = ({ user }) => {
                     />
                     <label
                         htmlFor="profile-upload"
-                        className='mt-3 text-blue-500 text-sm border border-blue-500 rounded-md px-3 py-1 inline-block cursor-pointer hover:bg-blue-50 transition-colors'
+                        className='mt-2 sm:mt-3 text-blue-500 text-xs sm:text-sm border border-blue-500 rounded-md px-2 sm:px-3 py-1 inline-block cursor-pointer hover:bg-blue-50 transition-colors'
                     >
                         Change Picture
                     </label>
                 </div>
             </div>
 
-            <div className='grid grid-cols-2 gap-6 mb-6'>
+            {/* Name Inputs */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
                 <div>
                     <label className='block text-sm font-medium mb-1'>First Name</label>
                     <input
@@ -113,7 +116,8 @@ const ProfileInformation = ({ user }) => {
                 </div>
             </div>
 
-            <div className='mb-6'>
+            {/* Bio */}
+            <div>
                 <label className='block text-sm font-medium mb-1'>Bio</label>
                 <textarea
                     className='w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]'
@@ -123,7 +127,8 @@ const ProfileInformation = ({ user }) => {
                 <div className='text-right text-xs text-gray-500 mt-1'>4/240</div>
             </div>
 
-            <div className='mb-6'>
+            {/* Expertise Categories */}
+            <div>
                 <label className='block text-sm font-medium mb-1'>Categories of Expertise</label>
                 <div className='relative'>
                     <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
@@ -137,7 +142,8 @@ const ProfileInformation = ({ user }) => {
                 </div>
             </div>
 
-            <div className='mb-6'>
+            {/* Languages */}
+            <div>
                 <label className='block text-sm font-medium mb-1'>Languages</label>
                 <div className='relative'>
                     <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
@@ -151,7 +157,8 @@ const ProfileInformation = ({ user }) => {
                 </div>
             </div>
 
-            <div className='mb-6'>
+            {/* Location */}
+            <div>
                 <label className='block text-sm font-medium mb-1'>Location</label>
                 <div className='relative'>
                     <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
@@ -165,9 +172,14 @@ const ProfileInformation = ({ user }) => {
                 </div>
             </div>
 
-            <div className='flex justify-end space-x-4'>
-                <button className='px-4 py-2 border border-gray-300 rounded-md text-gray-700'>Cancel</button>
-                <button className='px-4 py-2 bg-blue-500 text-white rounded-md'>Save</button>
+            {/* Action Buttons */}
+            <div className='flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4'>
+                <button className='w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors'>
+                    Cancel
+                </button>
+                <button className='w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
+                    Save Changes
+                </button>
             </div>
         </div>
     );

@@ -1,51 +1,43 @@
 "use client"
-import React, { useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
+import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useProfileInformationStore } from '@/store/profileStore';
 
 const ProfileInformation = ({ user }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
-    const { updateUserProfile } = useAuthStore();
 
-    // Added predefined options for select fields
-    const expertiseCategories = [
-        "Social Media Management",
-        "Content Creation",
-        "Graphic Design",
-        "Developmemt",
-        "Writting",
-        "Review",
-        "Data Entry",
-        "Virtual Assistance",
-        "Customer Support",
-        "Content Writing",
-        "Translation",
-        "Web Research",
-        "Lead Generation",
-        "Email Marketing",
-        "Administrative Support",
-        "Transcription",
-        "Video Editing",
-        "SEO"
-    ];
+    // Get store actions and state
+    const {
+        setAvatar,
+        setBio,
+        setLanguages,
+        setExpertise,
+        setFirstName,
+        setLastName,
+        setLocation,
+        updateProfileInformation,
+        isLoading,
+        error
+    } = useProfileInformationStore();
 
-    const languages = [
-        "English",
-        "Spanish",
-        "French",
-        "German",
-        "Chinese (Mandarin)",
-        "Arabic",
-        "Portuguese",
-        "Russian",
-        "Japanese",
-        "Hindi",
-        "Swahili",
-        "Italian",
-        "Korean",
-        "Dutch",
-        "Swedish"
-    ];
+    // Initialize the store with user data when component mounts
+    useEffect(() => {
+        if (user) {
+            if (user.firstName) setFirstName(user.firstName);
+            if (user.lastName) setLastName(user.lastName);
+            if (user.bio) setBio(user.bio);
+            if (user.expertise) setExpertise(user.expertise);
+            if (user.languages) setLanguages(user.languages);
+            if (user.location) setLocation(user.location);
+        }
+    }, [user]);
 
+    // Allowed values from the backend
+    const allowedLanguages = ["English", "French", "Spanish", "German", "Chinese"];
+    const allowedExpertise = ["Web Development", "Content Writing", "DevOps", "UI/UX Design"];
+
+    // Locations - keeping the same as original
     const locations = [
         "New York, USA",
         "Los Angeles, USA",
@@ -75,13 +67,13 @@ const ProfileInformation = ({ user }) => {
 
         // Check file size (limit to 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            alert('File is too large. Please select an image under 5MB.');
+            toast.error('File is too large. Please select an image under 5MB.');
             return;
         }
 
         // Check file type
         if (!file.type.startsWith('image/')) {
-            alert('Please select an image file.');
+            toast.error('Please select an image file.');
             return;
         }
 
@@ -90,169 +82,203 @@ const ProfileInformation = ({ user }) => {
         reader.onload = (e) => {
             setImagePreview(e.target.result);
 
-            // Upload to storage and update user profile
-            uploadImageAndUpdateProfile(file);
+            // Store the file in the avatar field of the store
+            setAvatar(file);
+
+            toast.success(`Image ${file.name} uploaded successfully`);
         };
         reader.readAsDataURL(file);
     };
 
-    const uploadImageAndUpdateProfile = async (file) => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
         try {
-            // Create a FormData object to send the file
-            const formData = new FormData();
-            formData.append('profileImage', file);
+            const result = await updateProfileInformation();
+            toast.success('Profile updated successfully!');
 
-            // Upload the image to your server
-            const response = await fetch('/api/upload-profile-image', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to upload image');
+            // If the backend returns an updated photoURL, update the preview
+            if (result && result.user && result.user.photoURL) {
+                setImagePreview(result.user.photoURL);
             }
-
-            const data = await response.json();
-
-            // Update user profile with the new image URL
-            await updateUserProfile({
-                photoURL: data.imageUrl,
-            });
-
-        } catch (error) {
-            console.error('Error uploading profile image:', error);
-            alert('Failed to upload image. Please try again.');
-            // Reset preview if upload fails
-            setImagePreview(user?.photoURL || null);
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            toast.error(err.response?.data?.message || 'Failed to update profile. Please try again.');
         }
     };
 
     return (
-        <div className='space-y-6'>
-            {/* Profile Picture Upload */}
-            <div className='flex justify-center mb-4 sm:mb-8'>
-                <div className='text-center'>
-                    <div className='w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full mx-auto flex items-center justify-center overflow-hidden'>
-                        {imagePreview ? (
-                            <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                            <span className='text-2xl sm:text-3xl font-bold text-blue-700'>
-                                {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
-                            </span>
-                        )}
+        <div className='space-y-6 relative'>
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            <form onSubmit={handleSubmit}>
+                {/* Profile Picture Upload */}
+                <div className='flex justify-center mb-4 sm:mb-8'>
+                    <div className='text-center'>
+                        <div className='w-20 h-20 sm:w-24 sm:h-24 bg-yellow-100 rounded-full mx-auto flex items-center justify-center overflow-hidden'>
+                            {imagePreview ? (
+                                <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className='text-2xl sm:text-3xl font-bold text-blue-700'>
+                                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
+                                </span>
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            id="profile-upload"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileUpload}
+                        />
+                        <label
+                            htmlFor="profile-upload"
+                            className='mt-2 sm:mt-3 text-blue-500 text-xs sm:text-sm border border-blue-500 rounded-md px-2 sm:px-3 py-1 inline-block cursor-pointer hover:bg-blue-50 transition-colors'
+                        >
+                            Change Picture
+                        </label>
                     </div>
-                    <input
-                        type="file"
-                        id="profile-upload"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                    />
-                    <label
-                        htmlFor="profile-upload"
-                        className='mt-2 sm:mt-3 text-blue-500 text-xs sm:text-sm border border-blue-500 rounded-md px-2 sm:px-3 py-1 inline-block cursor-pointer hover:bg-blue-50 transition-colors'
+                </div>
+
+                {/* Name Inputs */}
+                <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
+                    <div>
+                        <label className='block text-sm font-medium mb-1'>First Name</label>
+                        <input
+                            type="text"
+                            defaultValue={user?.firstName || ''}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md'
+                            placeholder="First Name"
+                        />
+                    </div>
+                    <div>
+                        <label className='block text-sm font-medium mb-1'>Last Name</label>
+                        <input
+                            type="text"
+                            defaultValue={user?.lastName || ''}
+                            onChange={(e) => setLastName(e.target.value)}
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md'
+                            placeholder="Last Name"
+                        />
+                    </div>
+                </div>
+
+                {/* Bio */}
+                <div>
+                    <label className='block text-sm font-medium mb-1'>Bio</label>
+                    <textarea
+                        className='w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]'
+                        defaultValue={user?.bio || ''}
+                        onChange={(e) => setBio(e.target.value)}
+                        placeholder="Craft a compelling bio that highlights your professional expertise, passion, and unique value. For example: 'Creative web developer with 5+ years of experience in React and Node.js. Passionate about building intuitive, user-friendly applications that solve real-world problems. Always learning and eager to collaborate on innovative projects.'"
+                        maxLength={240}
+                    ></textarea>
+                    <div className='text-right text-xs text-gray-500 mt-1'>
+                        {user?.bio ? user.bio.length : 0}/240
+                    </div>
+                </div>
+
+                {/* Expertise Categories */}
+                <div>
+                    <label className='block text-sm font-medium mb-1'>Categories of Expertise</label>
+                    <div className='relative'>
+                        <select
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
+                            defaultValue={user?.expertise || ""}
+                            onChange={(e) => setExpertise(e.target.value)}
+                        >
+                            <option value="">Select Your Preferred Task Categories</option>
+                            {allowedExpertise.map((category, index) => (
+                                <option key={index} value={category}>{category}</option>
+                            ))}
+                        </select>
+                        <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Languages */}
+                <div>
+                    <label className='block text-sm font-medium mb-1'>Languages</label>
+                    <div className='relative'>
+                        <select
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
+                            defaultValue={user?.languages?.[0] || ""}
+                            onChange={(e) => setLanguages(e.target.value ? [e.target.value] : [])}
+                        >
+                            <option value="">Languages Spoken</option>
+                            {allowedLanguages.map((language, index) => (
+                                <option key={index} value={language}>{language}</option>
+                            ))}
+                        </select>
+                        <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                    <label className='block text-sm font-medium mb-1'>Location</label>
+                    <div className='relative'>
+                        <select
+                            className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
+                            defaultValue={user?.location || ""}
+                            onChange={(e) => setLocation(e.target.value)}
+                        >
+                            <option value="">Choose Your City and Country</option>
+                            {locations.map((location, index) => (
+                                <option key={index} value={location}>{location}</option>
+                            ))}
+                        </select>
+                        <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Error message */}
+                {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
+
+                {/* Action Buttons */}
+                <div className='flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 mt-6'>
+                    <button
+                        type="button"
+                        className='w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors'
+                        onClick={() => {
+                            window.location.reload();
+                            toast.info('Changes discarded');
+                        }}
                     >
-                        Change Picture
-                    </label>
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className='w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Saving...' : 'Save Changes'}
+                    </button>
                 </div>
-            </div>
-
-            {/* Name Inputs */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
-                <div>
-                    <label className='block text-sm font-medium mb-1'>First Name</label>
-                    <input
-                        type="text"
-                        defaultValue={user?.firstName || ''}
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md'
-                        placeholder="First Name"
-                    />
-                </div>
-                <div>
-                    <label className='block text-sm font-medium mb-1'>Last Name</label>
-                    <input
-                        type="text"
-                        defaultValue={user?.lastName || ''}
-                        className='w-full px-3 py-2 border border-gray-300 rounded-md'
-                        placeholder="Last Name"
-                    />
-                </div>
-            </div>
-
-            {/* Bio */}
-            <div>
-                <label className='block text-sm font-medium mb-1'>Bio</label>
-                <textarea
-                    className='w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]'
-                    defaultValue="I specialize in social media management, graphic design, and data entry. Passionate about helping clients achieve their goals through efficient task completion."
-                    placeholder="Give a brief info about yourself..."
-                ></textarea>
-                <div className='text-right text-xs text-gray-500 mt-1'>4/240</div>
-            </div>
-
-            {/* Expertise Categories */}
-            <div>
-                <label className='block text-sm font-medium mb-1'>Categories of Expertise</label>
-                <div className='relative'>
-                    <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
-                        <option value="">Select Your Preferred Task Categories</option>
-                        {expertiseCategories.map((category, index) => (
-                            <option key={index} value={category}>{category}</option>
-                        ))}
-                    </select>
-                    <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            {/* Languages */}
-            <div>
-                <label className='block text-sm font-medium mb-1'>Languages</label>
-                <div className='relative'>
-                    <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
-                        <option value="">Languages Spoken</option>
-                        {languages.map((language, index) => (
-                            <option key={index} value={language}>{language}</option>
-                        ))}
-                    </select>
-                    <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            {/* Location */}
-            <div>
-                <label className='block text-sm font-medium mb-1'>Location</label>
-                <div className='relative'>
-                    <select className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'>
-                        <option value="">Choose Your City and Country</option>
-                        {locations.map((location, index) => (
-                            <option key={index} value={location}>{location}</option>
-                        ))}
-                    </select>
-                    <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className='flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4'>
-                <button className='w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors'>
-                    Cancel
-                </button>
-                <button className='w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors'>
-                    Save Changes
-                </button>
-            </div>
+            </form>
         </div>
     );
 };

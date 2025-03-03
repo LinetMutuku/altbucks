@@ -1,23 +1,74 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiTwotoneSchedule } from "react-icons/ai";
 import { CiStar } from "react-icons/ci";
 import { BsFillPatchCheckFill, BsGeoAlt } from "react-icons/bs";
 import { FaDatabase } from 'react-icons/fa';
+import { useProfileInformationStore } from '@/store/profileStore';
 
 const ProfileHeader = ({ user }) => {
+    // Get profile data from the store
+    const {
+        bio,
+        languages,
+        expertise,
+        firstName,
+        lastName,
+        location,
+        avatar
+    } = useProfileInformationStore();
+
+    // Local state for image preview
+    const [imagePreview, setImagePreview] = useState(null);
+
+    // Local state for user data
+    const [userData, setUserData] = useState({
+        ...user,
+        firstName: firstName || user?.firstName || '',
+        lastName: lastName || user?.lastName || '',
+        bio: bio || user?.bio || '',
+        location: location || user?.location || '',
+    });
+
+    // Update profile image when avatar changes
+    useEffect(() => {
+        if (avatar && avatar instanceof File) {
+            // For new file uploads, create a preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setImagePreview(e.target.result);
+            };
+            reader.readAsDataURL(avatar);
+        } else if (user?.photoURL) {
+            // For existing images from the backend
+            setImagePreview(user.photoURL);
+        }
+    }, [avatar, user?.photoURL]);
+
+    // Update user data when store values change
+    useEffect(() => {
+        setUserData({
+            ...user,
+            firstName: firstName || user?.firstName || '',
+            lastName: lastName || user?.lastName || '',
+            bio: bio || user?.bio || '',
+            location: location || user?.location || '',
+        });
+    }, [user, firstName, lastName, bio, location]);
+
     // Calculate profile completion
     const calculateProfileCompletion = () => {
-        if (!user) return 80; // Default value
+        if (!userData) return 0;
 
         let completed = 0;
-        const fields = ['firstName', 'lastName', 'email', 'phoneNumber'];
+        const fields = ['firstName', 'lastName', 'email', 'phoneNumber', 'bio', 'location'];
+        const totalFields = fields.length;
 
         fields.forEach(field => {
-            if (user[field]) completed++;
+            if (userData[field]) completed++;
         });
 
-        return Math.round((completed / fields.length) * 100);
+        return Math.round((completed / totalFields) * 100);
     };
 
     const profileCompletion = calculateProfileCompletion();
@@ -39,11 +90,11 @@ const ProfileHeader = ({ user }) => {
                 {/* Profile Picture - positioned to overlap with the hero banner */}
                 <div className='absolute -top-12 sm:-top-20 left-4 sm:left-8'>
                     <div className='w-16 h-16 sm:w-24 sm:h-24 bg-yellow-100 rounded-full flex items-center justify-center overflow-hidden border-4 border-white shadow-md'>
-                        {user?.photoURL ? (
-                            <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                        {imagePreview ? (
+                            <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             <span className='text-xl sm:text-3xl font-bold text-blue-700'>
-                                {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
+                                {userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : '👤'}
                             </span>
                         )}
                     </div>
@@ -52,15 +103,16 @@ const ProfileHeader = ({ user }) => {
                 <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:pl-40 pt-4'>
                     <div className='flex flex-col gap-2 sm:gap-3 w-full sm:w-[600px] mb-4 sm:mb-0'>
                         <h3 className='text-xl sm:text-2xl font-semibold text-blue-500'>
-                            {user?.firstName || ''} {user?.lastName || ''}
+                            {userData?.firstName || ''} {userData?.lastName || ''}
                         </h3>
                         <p className='text-xs sm:text-sm tracking-wide text-gray-500'>
-                            I specialize in social media management, graphic design, and data entry.
-                            Passionate about helping clients achieve their goals through efficient task completion.
+                            {userData?.bio || 'No bio available'}
                         </p>
                         <div className='text-blue-500 flex gap-2 sm:gap-3 items-center'>
                             <BsGeoAlt size={16} className='sm:w-5 sm:h-5'/>
-                            <p className='text-xs text-blue-500'>Texas, USA.</p>
+                            <p className='text-xs text-blue-500'>
+                                {userData?.location || 'Location not specified'}
+                            </p>
                         </div>
                     </div>
                     <div className='flex flex-col gap-2 sm:gap-3 w-full sm:w-[300px]'>
@@ -79,7 +131,7 @@ const ProfileHeader = ({ user }) => {
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Total Tasks</h4>
-                            <p className='text-lg sm:text-4xl font-semibold text-black'>{user?.tasksCompleted || 0}</p>
+                            <p className='text-lg sm:text-4xl font-semibold text-black'>{userData?.tasksCompleted || 0}</p>
                         </div>
                     </div>
 
@@ -89,7 +141,7 @@ const ProfileHeader = ({ user }) => {
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Total Earnings</h4>
-                            <p className='text-lg sm:text-4xl font-semibold text-black'>${user?.totalEarnings || 0}</p>
+                            <p className='text-lg sm:text-4xl font-semibold text-black'>${userData?.totalEarnings || 0}</p>
                         </div>
                     </div>
 
@@ -99,7 +151,7 @@ const ProfileHeader = ({ user }) => {
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Average Rating</h4>
-                            <p className='text-lg sm:text-4xl font-semibold text-black'>{user?.averageRating || 0}/5</p>
+                            <p className='text-lg sm:text-4xl font-semibold text-black'>{userData?.averageRating || 0}/5</p>
                         </div>
                     </div>
 
@@ -109,7 +161,7 @@ const ProfileHeader = ({ user }) => {
                         </div>
                         <div className='flex flex-col gap-1 sm:gap-3'>
                             <h4 className='text-xs sm:text-sm text-gray-400'>Job Success Rate</h4>
-                            <p className='text-lg sm:text-4xl font-semibold text-black'>{user?.successRate || 0}%</p>
+                            <p className='text-lg sm:text-4xl font-semibold text-black'>{userData?.successRate || 0}%</p>
                         </div>
                     </div>
                 </div>

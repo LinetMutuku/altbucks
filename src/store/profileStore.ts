@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
 
-// Define the interface for account settings
 interface AccountSettingsStore {
     currentPassword: string;
     newPassword: string;
@@ -15,7 +14,7 @@ interface AccountSettingsStore {
     updatePassword: () => Promise<void>;
 }
 
-// Define the interface for profile information
+// Profile Information Store
 interface ProfileInformationStore {
     avatar: File | null;
     bio: string;
@@ -34,21 +33,7 @@ interface ProfileInformationStore {
     setFirstName: (firstName: string) => void;
     setLastName: (lastName: string) => void;
     setLocation: (location: string) => void;
-    updateProfileInformation: () => Promise<any>;
-}
-
-// Define the interface for user data
-interface UserData {
-    firstName?: string;
-    lastName?: string;
-    bio?: string;
-    location?: string;
-    expertise?: string;
-    languages?: string[];
-    photoURL?: string;
-    email?: string;
-    phoneNumber?: string;
-    [key: string]: any; // For any other properties
+    updateProfileInformation: () => Promise<void>;
 }
 
 // Account Settings Store
@@ -59,9 +44,9 @@ export const useAccountSettingsStore = create<AccountSettingsStore>((set, get) =
     isLoading: false,
     error: null,
 
-    setCurrentPassword: (password: string) => set({ currentPassword: password }),
-    setNewPassword: (password: string) => set({ newPassword: password }),
-    setConfirmPassword: (password: string) => set({ confirmPassword: password }),
+    setCurrentPassword: (password) => set({ currentPassword: password }),
+    setNewPassword: (password) => set({ newPassword: password }),
+    setConfirmPassword: (password) => set({ confirmPassword: password }),
 
     updatePassword: async () => {
         const { currentPassword, newPassword, confirmPassword } = get();
@@ -92,7 +77,7 @@ export const useAccountSettingsStore = create<AccountSettingsStore>((set, get) =
                     lastName: 'Name'
                 },
                 {
-                    withCredentials: true,
+                    credentials: true,
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -130,16 +115,15 @@ export const useProfileInformationStore = create<ProfileInformationStore>((set, 
     isLoading: false,
     error: null,
 
-    setAvatar: (avatar: File | null) => set({ avatar }),
-    setBio: (bio: string) => set({ bio }),
-    setLanguages: (languages: string[]) => set({ languages }),
-    setExpertise: (expertise: string) => set({ expertise }),
-    setFirstName: (firstName: string) => set({ firstName }),
-    setLastName: (lastName: string) => set({ lastName }),
-    setLocation: (location: string) => set({ location }),
+    setAvatar: (avatar) => set({ avatar }),
+    setBio: (bio) => set({ bio }),
+    setLanguages: (languages) => set({ languages }),
+    setExpertise: (expertise) => set({ expertise }),
+    setFirstName: (firstName) => set({ firstName }),
+    setLastName: (lastName) => set({ lastName }),
+    setLocation: (location) => set({ location }),
 
     updateProfileInformation: async () => {
-        // Explicitly type all variables from the store state
         const {
             avatar,
             bio,
@@ -155,86 +139,36 @@ export const useProfileInformationStore = create<ProfileInformationStore>((set, 
         try {
             const token = localStorage.getItem('authToken');
 
-            // Get the current user data from localStorage
-            let currentUser: UserData = {};
-            try {
-                const userJSON = localStorage.getItem('user');
-                if (userJSON) {
-                    currentUser = JSON.parse(userJSON);
-                }
-            } catch (e) {
-                console.error('Error parsing user data:', e);
-            }
-
-            // Create a minimal payload with just what's needed
-            const payload = {
-                bio: bio || '',
-                expertise: expertise || '',
-                firstName: firstName || '',
-                lastName: lastName || '',
-                location: location || '',
-                // Convert languages to a string with commas if it's an array
-                // This is a workaround for the "filter is not a function" error
-                languages: languages && languages.length > 0
-                    ? languages.join(',')
-                    : ''
-            };
-
-            console.log('Sending minimal payload:', payload);
-
-            // If we have an avatar, use FormData
-            let requestData: any;
-            let headers: Record<string, string> = {
-                'Authorization': `Bearer ${token}`
-            };
-
-            if (avatar && avatar instanceof File) {
-                const formData = new FormData();
-
-                // Add the file
+            const formData = new FormData();
+            if (avatar) {
                 formData.append('avatar', avatar);
-
-                // Add the other fields
-                Object.entries(payload).forEach(([key, value]) => {
-                    formData.append(key, String(value));
-                });
-
-                requestData = formData;
-                // Let browser set content type
-            } else {
-                // Use JSON directly
-                requestData = payload;
-                headers['Content-Type'] = 'application/json';
             }
+            formData.append('bio', bio);
+            formData.append('languages', JSON.stringify(languages));
+            formData.append('expertise', expertise);
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+            formData.append('location', location);
 
-            // Try a very simple approach - just making a direct request with minimal data
-            const response = await axios({
-                method: 'put',
-                url: 'https://altbucks-server-t.onrender.com/users/profile',
-                data: requestData,
-                headers: headers,
-                withCredentials: true
-            });
-
-            // Update local storage with the new user data if needed
-            if (response.data && response.data.user) {
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                console.log('Updated user data in localStorage');
-            }
+            const response = await axios.put(
+                'https://altbucks-server-t.onrender.com/users/profile',
+                formData,
+                {
+                    credentials: true,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
 
             set({
                 isLoading: false,
                 error: null
             });
 
-            console.log('Profile update successful:', response.data);
             return response.data;
         } catch (error: any) {
-            console.error('Profile update error:', error);
-            if (error.response) {
-                console.error('Error response data:', error.response.data);
-            }
-
             set({
                 error: error.response?.data?.message || 'Failed to update profile',
                 isLoading: false

@@ -7,7 +7,7 @@ import { useProfileInformationStore } from '@/store/profileStore';
 const ProfileInformation = ({ user }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
 
-    // Get store actions and state
+    // Get store actions and state - match function names with the store
     const {
         setAvatar,
         setBio,
@@ -28,72 +28,66 @@ const ProfileInformation = ({ user }) => {
             if (user.lastName) setLastName(user.lastName);
             if (user.bio) setBio(user.bio);
             if (user.expertise) setExpertise(user.expertise);
-            if (user.languages) setLanguages(user.languages);
+
+            // Handle language initialization
+            if (user.languages) {
+                if (typeof user.languages === 'string') {
+                    setLanguages([user.languages]); // Pass as array
+                } else if (Array.isArray(user.languages) && user.languages.length > 0) {
+                    setLanguages(user.languages); // Pass the array directly
+                }
+            }
+
             if (user.location) setLocation(user.location);
         }
     }, [user]);
 
-    // Allowed values from the backend
+    // Allowed values
     const allowedLanguages = ["English", "French", "Spanish", "German", "Chinese"];
     const allowedExpertise = ["Web Development", "Content Writing", "DevOps", "UI/UX Design"];
-
-    // Locations - keeping the same as original
     const locations = [
-        "New York, USA",
-        "Los Angeles, USA",
-        "Chicago, USA",
-        "Houston, USA",
-        "Texas, USA",
-        "London, UK",
-        "Manchester, UK",
-        "Toronto, Canada",
-        "Sydney, Australia",
-        "Melbourne, Australia",
-        "Berlin, Germany",
-        "Paris, France",
-        "Madrid, Spain",
-        "Tokyo, Japan",
-        "Singapore",
-        "Mumbai, India",
-        "Nairobi, Kenya",
-        "Lagos, Nigeria",
-        "Cape Town, South Africa",
-        "Mexico City, Mexico"
+        "New York, USA", "Los Angeles, USA", "Chicago, USA", "Houston, USA",
+        "Texas, USA", "London, UK", "Manchester, UK", "Toronto, Canada",
+        "Sydney, Australia", "Melbourne, Australia", "Berlin, Germany",
+        "Paris, France", "Madrid, Spain", "Tokyo, Japan", "Singapore",
+        "Mumbai, India", "Nairobi, Kenya", "Lagos, Nigeria",
+        "Cape Town, South Africa", "Mexico City, Mexico"
     ];
 
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Check file size (limit to 5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error('File is too large. Please select an image under 5MB.');
             return;
         }
 
-        // Check file type
         if (!file.type.startsWith('image/')) {
             toast.error('Please select an image file.');
             return;
         }
 
-        // Create a preview
         const reader = new FileReader();
         reader.onload = (e) => {
             setImagePreview(e.target.result);
-
-            // Store the file in the avatar field of the store
             setAvatar(file);
-
             toast.success(`Image ${file.name} uploaded successfully`);
         };
         reader.readAsDataURL(file);
+    };
+
+    // Handle language change - convert single value to array
+    const handleLanguageChange = (e) => {
+        const value = e.target.value;
+        setLanguages(value ? [value] : []); // Pass as array
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
+            // Use updateProfileInformation from the store
             const result = await updateProfileInformation();
             toast.success('Profile updated successfully!');
 
@@ -102,25 +96,21 @@ const ProfileInformation = ({ user }) => {
                 setImagePreview(result.user.photoURL);
             }
         } catch (err) {
-            console.error('Error updating profile:', err);
+            console.error('Error in handleSubmit:', err);
             toast.error(err.response?.data?.message || 'Failed to update profile. Please try again.');
         }
     };
 
+    // Get the current languages from the store
+    const currentLanguages = useProfileInformationStore(state => state.languages);
+    // Extract the first language for the dropdown
+    const currentLanguage = currentLanguages && currentLanguages.length > 0
+        ? currentLanguages[0]
+        : "";
+
     return (
         <div className='space-y-6 relative'>
-            <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
+            <ToastContainer position="top-right" autoClose={3000} />
             <form onSubmit={handleSubmit}>
                 {/* Profile Picture Upload */}
                 <div className='flex justify-center mb-4 sm:mb-8'>
@@ -181,7 +171,7 @@ const ProfileInformation = ({ user }) => {
                         className='w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]'
                         defaultValue={user?.bio || ''}
                         onChange={(e) => setBio(e.target.value)}
-                        placeholder="Craft a compelling bio that highlights your professional expertise, passion, and unique value. For example: 'Creative web developer with 5+ years of experience in React and Node.js. Passionate about building intuitive, user-friendly applications that solve real-world problems. Always learning and eager to collaborate on innovative projects.'"
+                        placeholder="Write your bio here..."
                         maxLength={240}
                     ></textarea>
                     <div className='text-right text-xs text-gray-500 mt-1'>
@@ -211,18 +201,18 @@ const ProfileInformation = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Languages */}
+                {/* Languages - UPDATED to use setLanguages */}
                 <div>
                     <label className='block text-sm font-medium mb-1'>Languages</label>
                     <div className='relative'>
                         <select
                             className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
-                            defaultValue={user?.languages?.[0] || ""}
-                            onChange={(e) => setLanguages(e.target.value ? [e.target.value] : [])}
+                            value={currentLanguage}
+                            onChange={handleLanguageChange}
                         >
                             <option value="">Languages Spoken</option>
-                            {allowedLanguages.map((language, index) => (
-                                <option key={index} value={language}>{language}</option>
+                            {allowedLanguages.map((lang, index) => (
+                                <option key={index} value={lang}>{lang}</option>
                             ))}
                         </select>
                         <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
@@ -243,8 +233,8 @@ const ProfileInformation = ({ user }) => {
                             onChange={(e) => setLocation(e.target.value)}
                         >
                             <option value="">Choose Your City and Country</option>
-                            {locations.map((location, index) => (
-                                <option key={index} value={location}>{location}</option>
+                            {locations.map((loc, index) => (
+                                <option key={index} value={loc}>{loc}</option>
                             ))}
                         </select>
                         <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>

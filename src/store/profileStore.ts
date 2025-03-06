@@ -145,7 +145,7 @@ export const useProfileInformationStore = create<ProfileInformationStore>((set, 
             }
             formData.append('bio', bio);
             formData.append('languages', JSON.stringify(languages));
-            formData.append('expertise', expertise);
+            formData.append('expertise', JSON.stringify(expertise));
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
             formData.append('location', location);

@@ -45,14 +45,7 @@ const ProfileInformation = ({ user }) => {
     // Allowed values
     const allowedLanguages = ["English", "French", "Spanish", "German", "Chinese"];
     const allowedExpertise = ["Web Development", "Content Writing", "DevOps", "UI/UX Design"];
-    const locations = [
-        "New York, USA", "Los Angeles, USA", "Chicago, USA", "Houston, USA",
-        "Texas, USA", "London, UK", "Manchester, UK", "Toronto, Canada",
-        "Sydney, Australia", "Melbourne, Australia", "Berlin, Germany",
-        "Paris, France", "Madrid, Spain", "Tokyo, Japan", "Singapore",
-        "Mumbai, India", "Nairobi, Kenya", "Lagos, Nigeria",
-        "Cape Town, South Africa", "Mexico City, Mexico"
-    ];
+    const locations = ["Nigeria", "Rwanda", "Kenya", "United States", "Spain", "France"];
 
     const handleFileUpload = (event) => {
         const file = event.target.files[0];

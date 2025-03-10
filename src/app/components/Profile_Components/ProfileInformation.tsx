@@ -2,43 +2,37 @@
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useProfileInformationStore } from '@/store/profileStore';
 
 const ProfileInformation = ({ user }) => {
+    // Profile state
+    const [profileData, setProfileData] = useState({
+        firstName: '',
+        lastName: '',
+        bio: '',
+        language: '',
+        expertise: '',
+        location: '',
+        avatar: null
+    });
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    // Get store actions and state - match function names with the store
-    const {
-        setAvatar,
-        setBio,
-        setLanguages,
-        setExpertise,
-        setFirstName,
-        setLastName,
-        setLocation,
-        updateProfileInformation,
-        isLoading,
-        error
-    } = useProfileInformationStore();
-
-    // Initialize the store with user data when component mounts
+    // Initialize with user data when component mounts
     useEffect(() => {
         if (user) {
-            if (user.firstName) setFirstName(user.firstName);
-            if (user.lastName) setLastName(user.lastName);
-            if (user.bio) setBio(user.bio);
-            if (user.expertise) setExpertise(user.expertise);
-
-            // Handle language initialization
-            if (user.languages) {
-                if (typeof user.languages === 'string') {
-                    setLanguages([user.languages]); // Pass as array
-                } else if (Array.isArray(user.languages) && user.languages.length > 0) {
-                    setLanguages(user.languages); // Pass the array directly
-                }
-            }
-
-            if (user.location) setLocation(user.location);
+            setProfileData({
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                bio: user.bio || '',
+                language: typeof user.languages === 'string'
+                    ? user.languages
+                    : (Array.isArray(user.languages) && user.languages.length > 0
+                        ? user.languages[0] : ''),
+                expertise: user.expertise || '',
+                location: user.location || '',
+                avatar: null
+            });
         }
     }, [user]);
 
@@ -46,6 +40,14 @@ const ProfileInformation = ({ user }) => {
     const allowedLanguages = ["English", "French", "Spanish", "German", "Chinese"];
     const allowedExpertise = ["Web Development", "Content Writing", "DevOps", "UI/UX Design"];
     const locations = ["Nigeria", "Rwanda", "Kenya", "United States", "Spain", "France"];
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setProfileData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
@@ -64,42 +66,100 @@ const ProfileInformation = ({ user }) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             setImagePreview(e.target.result);
-            setAvatar(file);
+            setProfileData(prev => ({
+                ...prev,
+                avatar: file
+            }));
             toast.success(`Image ${file.name} uploaded successfully`);
         };
         reader.readAsDataURL(file);
     };
 
-    // Handle language change - convert single value to array
-    const handleLanguageChange = (e) => {
-        const value = e.target.value;
-        setLanguages(value ? [value] : []); // Pass as array
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError(null);
 
         try {
-            // Use updateProfileInformation from the store
-            const result = await updateProfileInformation();
-            toast.success('Profile updated successfully!');
+            // Get auth token
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                throw new Error('Authentication token not found');
+            }
 
-            // If the backend returns an updated photoURL, update the preview
-            if (result && result.user && result.user.photoURL) {
-                setImagePreview(result.user.photoURL);
+            // Super minimal approach - only send non-problematic fields
+            const minimalData = {
+                firstName: profileData.firstName,
+                lastName: profileData.lastName,
+                bio: profileData.bio,
+                location: profileData.location
+                // No expertise, no languages
+            };
+
+            console.log('Sending minimal data:', minimalData);
+
+            // Make profile update API call
+            const response = await fetch('https://altbucks-server-t.onrender.com/users/profile', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(minimalData)
+            });
+
+            console.log('Response status:', response.status);
+
+            if (response.ok) {
+                toast.success('Profile updated successfully!');
+
+                // Handle avatar separately if present
+                if (profileData.avatar) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('avatar', profileData.avatar);
+
+                        // FIXED: Use the correct endpoint for avatar upload
+                        const avatarResponse = await fetch('https://altbucks-server-t.onrender.com/users/profile', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: formData
+                        });
+
+                        if (!avatarResponse.ok) {
+                            console.error('Avatar update failed with status:', avatarResponse.status);
+                            toast.warning('Profile updated but avatar failed to update');
+                        } else {
+                            toast.success('Avatar also updated successfully!');
+                        }
+                    } catch (avatarError) {
+                        console.error('Avatar update failed:', avatarError);
+                        toast.warning('Profile updated but avatar failed to update');
+                    }
+                }
+            } else {
+                // Try to parse error response
+                let errorMessage = 'Failed to update profile';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    // If can't parse JSON, use status code
+                    errorMessage = `Server error: ${response.status}`;
+                }
+
+                throw new Error(errorMessage);
             }
         } catch (err) {
-            console.error('Error in handleSubmit:', err);
-            toast.error(err.response?.data?.message || 'Failed to update profile. Please try again.');
+            console.error('Update failed:', err);
+            setError(err.message || 'Failed to update profile. Please try again.');
+            toast.error(err.message || 'Failed to update profile. Please try again.');
         }
-    };
 
-    // Get the current languages from the store
-    const currentLanguages = useProfileInformationStore(state => state.languages);
-    // Extract the first language for the dropdown
-    const currentLanguage = currentLanguages && currentLanguages.length > 0
-        ? currentLanguages[0]
-        : "";
+        setIsLoading(false);
+    };
 
     return (
         <div className='space-y-6 relative'>
@@ -113,7 +173,7 @@ const ProfileInformation = ({ user }) => {
                                 <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
                             ) : (
                                 <span className='text-2xl sm:text-3xl font-bold text-blue-700'>
-                                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
+                                    {profileData.firstName ? profileData.firstName.charAt(0).toUpperCase() : '👤'}
                                 </span>
                             )}
                         </div>
@@ -139,8 +199,9 @@ const ProfileInformation = ({ user }) => {
                         <label className='block text-sm font-medium mb-1'>First Name</label>
                         <input
                             type="text"
-                            defaultValue={user?.firstName || ''}
-                            onChange={(e) => setFirstName(e.target.value)}
+                            name="firstName"
+                            value={profileData.firstName}
+                            onChange={handleInputChange}
                             className='w-full px-3 py-2 border border-gray-300 rounded-md'
                             placeholder="First Name"
                         />
@@ -149,8 +210,9 @@ const ProfileInformation = ({ user }) => {
                         <label className='block text-sm font-medium mb-1'>Last Name</label>
                         <input
                             type="text"
-                            defaultValue={user?.lastName || ''}
-                            onChange={(e) => setLastName(e.target.value)}
+                            name="lastName"
+                            value={profileData.lastName}
+                            onChange={handleInputChange}
                             className='w-full px-3 py-2 border border-gray-300 rounded-md'
                             placeholder="Last Name"
                         />
@@ -162,24 +224,26 @@ const ProfileInformation = ({ user }) => {
                     <label className='block text-sm font-medium mb-1'>Bio</label>
                     <textarea
                         className='w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]'
-                        defaultValue={user?.bio || ''}
-                        onChange={(e) => setBio(e.target.value)}
+                        name="bio"
+                        value={profileData.bio}
+                        onChange={handleInputChange}
                         placeholder="Write your bio here..."
                         maxLength={240}
                     ></textarea>
                     <div className='text-right text-xs text-gray-500 mt-1'>
-                        {user?.bio ? user.bio.length : 0}/240
+                        {profileData.bio.length}/240
                     </div>
                 </div>
 
-                {/* Expertise Categories */}
+                {/* Expertise Categories - keep in UI but don't send */}
                 <div>
                     <label className='block text-sm font-medium mb-1'>Categories of Expertise</label>
                     <div className='relative'>
                         <select
                             className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
-                            defaultValue={user?.expertise || ""}
-                            onChange={(e) => setExpertise(e.target.value)}
+                            name="expertise"
+                            value={profileData.expertise}
+                            onChange={handleInputChange}
                         >
                             <option value="">Select Your Preferred Task Categories</option>
                             {allowedExpertise.map((category, index) => (
@@ -194,14 +258,15 @@ const ProfileInformation = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Languages - UPDATED to use setLanguages */}
+                {/* Languages - keep in UI but don't send */}
                 <div>
                     <label className='block text-sm font-medium mb-1'>Languages</label>
                     <div className='relative'>
                         <select
                             className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
-                            value={currentLanguage}
-                            onChange={handleLanguageChange}
+                            name="language"
+                            value={profileData.language}
+                            onChange={handleInputChange}
                         >
                             <option value="">Languages Spoken</option>
                             {allowedLanguages.map((lang, index) => (
@@ -222,8 +287,9 @@ const ProfileInformation = ({ user }) => {
                     <div className='relative'>
                         <select
                             className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
-                            defaultValue={user?.location || ""}
-                            onChange={(e) => setLocation(e.target.value)}
+                            name="location"
+                            value={profileData.location}
+                            onChange={handleInputChange}
                         >
                             <option value="">Choose Your City and Country</option>
                             {locations.map((loc, index) => (

@@ -4,57 +4,38 @@ import { AiTwotoneSchedule } from "react-icons/ai";
 import { CiStar } from "react-icons/ci";
 import { BsFillPatchCheckFill, BsGeoAlt } from "react-icons/bs";
 import { FaDatabase } from 'react-icons/fa';
-import { useProfileInformationStore } from '@/store/profileStore';
 
 const ProfileHeader = ({ user }) => {
-    // Get profile data from the store
-    const {
-        bio,
-        languages,
-        expertise,
-        firstName,
-        lastName,
-        location,
-        avatar
-    } = useProfileInformationStore();
-
     // Local state for image preview
     const [imagePreview, setImagePreview] = useState(null);
 
     // Local state for user data
     const [userData, setUserData] = useState({
         ...user,
-        firstName: firstName || user?.firstName || '',
-        lastName: lastName || user?.lastName || '',
-        bio: bio || user?.bio || '',
-        location: location || user?.location || '',
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        bio: user?.bio || '',
+        location: user?.location || '',
     });
 
-    // Update profile image when avatar changes
+    // Update profile image when user photo changes
     useEffect(() => {
-        if (avatar && avatar instanceof File) {
-            // For new file uploads, create a preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setImagePreview(e.target.result);
-            };
-            reader.readAsDataURL(avatar);
-        } else if (user?.photoURL) {
+        if (user?.photoURL) {
             // For existing images from the backend
             setImagePreview(user.photoURL);
         }
-    }, [avatar, user?.photoURL]);
+    }, [user?.photoURL]);
 
-    // Update user data when store values change
+    // Update user data when user props change
     useEffect(() => {
         setUserData({
             ...user,
-            firstName: firstName || user?.firstName || '',
-            lastName: lastName || user?.lastName || '',
-            bio: bio || user?.bio || '',
-            location: location || user?.location || '',
+            firstName: user?.firstName || '',
+            lastName: user?.lastName || '',
+            bio: user?.bio || '',
+            location: user?.location || '',
         });
-    }, [user, firstName, lastName, bio, location]);
+    }, [user]);
 
     // Calculate profile completion
     const calculateProfileCompletion = () => {

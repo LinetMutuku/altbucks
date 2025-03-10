@@ -28,7 +28,7 @@ export default function Header() {
                 <Link href="/dashboard_taskcreator" className={`w-fit h-fit px-6 py-3 ${pathname === "/dashboard_taskcreator" ? "bg-blue-500 text-white rounded-lg" :""}`}>
                     Dashboard
                 </Link>
-                <Link href="/dashboard_taskcreator/tasks" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator/tasks" ? "bg-blue-500 text-white rounded-lg" :""}`}>
+                <Link href="/dashboard_taskcreator/task" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator/task" ? "bg-blue-500 text-white rounded-lg" :""}`}>
                     Tasks
                 </Link>
                 <Link href="/dashboard_taskcreator/my_wallet" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator/my_wallet" ? "bg-blue-500 text-white rounded-lg" :""}`}>

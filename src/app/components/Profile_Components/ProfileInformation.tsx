@@ -2,37 +2,42 @@
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useAuthStore } from '@/store/authStore'; // Import existing auth store
 
-const ProfileInformation = ({ user }) => {
+const ProfileInformation = () => {
+    // Get user from auth store
+    const { user, isAuthenticated } = useAuthStore();
+
     // Profile state
     const [profileData, setProfileData] = useState({
         firstName: '',
         lastName: '',
         bio: '',
-        language: '',
+        languages: '',
         expertise: '',
         location: '',
         avatar: null
     });
-    const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Initialize with user data when component mounts
+    // Initialize with user data when component mounts or user changes
     useEffect(() => {
         if (user) {
             setProfileData({
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                bio: user.bio || '',
-                language: typeof user.languages === 'string'
-                    ? user.languages
-                    : (Array.isArray(user.languages) && user.languages.length > 0
-                        ? user.languages[0] : ''),
-                expertise: user.expertise || '',
-                location: user.location || '',
+                firstName: user?.firstName || '',
+                lastName: user?.lastName || '',
+                bio: user?.bio || '',
+                languages: user?.languages || '',
+                expertise: user?.expertise || '',
+                location: user?.location || '',
                 avatar: null
             });
+
+            if (user.photoURL) {
+                setImagePreview(user.photoURL);
+            }
         }
     }, [user]);
 
@@ -43,6 +48,8 @@ const ProfileInformation = ({ user }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
+        // For all fields, just store the direct value (as a string)
         setProfileData(prev => ({
             ...prev,
             [name]: value
@@ -92,8 +99,9 @@ const ProfileInformation = ({ user }) => {
                 firstName: profileData.firstName,
                 lastName: profileData.lastName,
                 bio: profileData.bio,
-                location: profileData.location
-                // No expertise, no languages
+                location: profileData.location,
+                expertise: profileData.expertise,
+                languages: profileData.languages
             };
 
             console.log('Sending minimal data:', minimalData);
@@ -112,6 +120,15 @@ const ProfileInformation = ({ user }) => {
 
             if (response.ok) {
                 toast.success('Profile updated successfully!');
+
+                // Refresh the user profile data in auth store after update
+                // We need to call profileAuth() to refresh the user data
+                try {
+                    // Since profileAuth is async, we need to wait for it
+                    await useAuthStore.getState().profileAuth();
+                } catch (refreshError) {
+                    console.error('Failed to refresh profile data:', refreshError);
+                }
 
                 // Handle avatar separately if present
                 if (profileData.avatar) {
@@ -133,6 +150,13 @@ const ProfileInformation = ({ user }) => {
                             toast.warning('Profile updated but avatar failed to update');
                         } else {
                             toast.success('Avatar also updated successfully!');
+
+                            // Refresh the user profile data in auth store again after avatar update
+                            try {
+                                await useAuthStore.getState().profileAuth();
+                            } catch (refreshError) {
+                                console.error('Failed to refresh profile data after avatar update:', refreshError);
+                            }
                         }
                     } catch (avatarError) {
                         console.error('Avatar update failed:', avatarError);
@@ -154,8 +178,8 @@ const ProfileInformation = ({ user }) => {
             }
         } catch (err) {
             console.error('Update failed:', err);
-            setError(err.message || 'Failed to update profile. Please try again.');
-            toast.error(err.message || 'Failed to update profile. Please try again.');
+            setError(err.message);
+            toast.error(err.message);
         }
 
         setIsLoading(false);
@@ -235,7 +259,7 @@ const ProfileInformation = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Expertise Categories - keep in UI but don't send */}
+                {/* Expertise Categories */}
                 <div>
                     <label className='block text-sm font-medium mb-1'>Categories of Expertise</label>
                     <div className='relative'>
@@ -258,14 +282,14 @@ const ProfileInformation = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Languages - keep in UI but don't send */}
+                {/* Languages */}
                 <div>
                     <label className='block text-sm font-medium mb-1'>Languages</label>
                     <div className='relative'>
                         <select
                             className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
-                            name="language"
-                            value={profileData.language}
+                            name="languages"
+                            value={profileData.languages}
                             onChange={handleInputChange}
                         >
                             <option value="">Languages Spoken</option>

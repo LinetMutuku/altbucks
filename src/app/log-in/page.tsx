@@ -24,9 +24,10 @@ export default function LoginPage() {
         e.preventDefault();
         setLoading(true);
 
-        try {
-            await loginWithEmailAndPassword(email, password);
+        try {   
+            const response = await loginWithEmailAndPassword(email, password);
             toast.success("Successfully logged in!");
+            // localStorage.setItem("token",response.data.data.token);
             router.push("/dashboard");
         } catch (error: any) {
             console.error('Login error:', error);

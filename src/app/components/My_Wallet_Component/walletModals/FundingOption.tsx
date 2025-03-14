@@ -1,36 +1,44 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import { useState } from "react";
 import flutterWave from "../../../../../public/assets/my_wallet/fundingOption/flutterWave.png";
-import paypal from "../../../../../public/assets/my_wallet/fundingOption/paypal.png";
+// import paypal from "../../../../../public/assets/my_wallet/fundingOption/paypal.png";
 import stripe from "../../../../../public/assets/my_wallet/fundingOption/stripe.png";
-import wise from "../../../../../public/assets/my_wallet/fundingOption/wise.png";
+// import wise from "../../../../../public/assets/my_wallet/fundingOption/wise.png";
 import { IoIosArrowForward } from "react-icons/io";
 import { AiOutlineClose } from "react-icons/ai";
-import PayoutAccount from "./PayoutAccount";
+// import PayoutAccount from "./PayoutAccount";
 import { useMyContext } from "@/context";
-
-
 
 const FundingOption: React.FC = () => {
   const [hovered, setHovered] = useState<string | null>(null);
-  const { setIsFundingOptionOpen, setIsPayoutAccountOpen } = useMyContext()
+  const { setIsFundingOptionOpen, setIsPayoutAccountOpen } = useMyContext();
 
   const paymentOptions = [
     { img: flutterWave, alt: "Flutterwave" },
-    { img: wise, alt: "Wise" },
+    // { img: wise, alt: "Wise" },
     { img: stripe, alt: "Stripe" },
-    { img: paypal, alt: "PayPal" },
+    // { img: paypal, alt: "PayPal" }
   ];
 
   const onClose = () => {
-    setIsFundingOptionOpen(false)
-  }
-  const handleShow = () => {
-    setIsPayoutAccountOpen(true)
-    setIsFundingOptionOpen(false)
-  }
+    setIsFundingOptionOpen(false);
+  };
+  // const handleShow = () => {
+  //   setIsPayoutAccountOpen(true);
+  //   setIsFundingOptionOpen(false);
+  // };
+
+  const handleShow = (optionAlt: string) => {
+    if (optionAlt === "Stripe") {
+      localStorage.setItem("paymentMethod", JSON.stringify({ paymentGateway: "stripe", currency: "USD" }));
+    } else if (optionAlt === "Flutterwave") {
+      localStorage.setItem("paymentMethod", JSON.stringify({ paymentGateway: "flutterwave", currency: "NGN" }));
+    }
+    setIsPayoutAccountOpen(true);
+    setIsFundingOptionOpen(false);
+  };
 
   return (
     <>
@@ -51,10 +59,17 @@ const FundingOption: React.FC = () => {
                 key={index}
                 onMouseEnter={() => setHovered(option.alt)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={handleShow}
+                // onClick={handleShow}
+                onClick={() => handleShow(option.alt)}
                 className="relative flex items-center h-20 justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:shadow-md transition"
               >
-                <Image src={option.img} alt={option.alt} objectFit="contain" width={120} height={40} />
+                <Image
+                  src={option.img}
+                  alt={option.alt}
+                  objectFit="contain"
+                  width={120}
+                  height={40}
+                />
                 {hovered === option.alt ? (
                   <div className="absolute right-0 top-0 h-full w-52 font-bold text-xl flex items-center justify-center bg-gradient-to-r from-[#092C4C] to-[#5264FF] text-white px-4 rounded-xl rounded-l-full">
                     Click to Fund <br /> Your Wallet

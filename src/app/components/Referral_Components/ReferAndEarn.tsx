@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CiBookmark } from "react-icons/ci";
 import { PiWalletDuotone } from "react-icons/pi";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import { useAuthStore } from '@/store/authStore';
 import ReferralInvite from '../share_overlay/ShareOverlay';
+import { API_URL } from '@/lib/utils';
 
 const ReferAndEarn: React.FC = () => {
   const { user} = useAuthStore();
+  const [token, setToken] = useState<string | null>(null);
 
 
   //Referral Link Generation
-  const signUpUrl = "http://localhost:3000/sign-up/"; 
+  const signUpUrl = "https://altbucks-ipat.vercel.app/sign-up/"; 
   const referralCode = user?.referralCode || "DEFAULT_CODE";
   const referralLink = `${signUpUrl}?ref=${referralCode}`;
+  
   const [isCopied, setIsCopied] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [totalReferrals, setTotalReferrals] = useState(0);
+  const [pendingRewards, setPendingRewards] = useState(0);
+  const [earnedRewards, setEarnedRewards] = useState(0);
 
-  console.log(referralLink)
+  useEffect(() => {
+    setToken(localStorage.getItem("authToken")); 
+  }, []);
 
+  //Hanlde copy
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
     setIsCopied(true);
@@ -27,19 +36,46 @@ const ReferAndEarn: React.FC = () => {
     }, 2000);
   };
 
+  useEffect(() => {
+    const fetchReferralStats = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/v1/referrals/stats`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch referral stats.");
+        }
+  
+        const data = await response.json();
+  
+        setTotalReferrals(data?.data?.totalReferrals || 0);
+        setPendingRewards(data?.data?.pendingRewards || 0);
+        setEarnedRewards(data?.data?.earnedRewards || 0);
+      } catch (error) {
+        console.error("Error fetching referral stats:", error);
+      }
+    };
+  
+    if (token) {
+      fetchReferralStats();
+    }
+  }, [token]);
 
-  const userName = "Smith";
-  const totalReferrals = 22;
-  const pendingRewards = "2,202";
-  const earnedRewards = 1700;
-
+  const formattedFirstName = user?.firstName
+  ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1).toLowerCase()
+  : "";
   
   return (
     <div className="text-white py-6 px-6 flex flex-col space-y-10">
       {/* Header Section */}
       <div className="bg-[#2877EA] flex rounded-lg px-12 py-4 flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
         <div className="md:w-2/3">
-          <h1 className="text-xl mb-2">Hi {userName},</h1>
+          <h1 className="text-xl mb-2">Hi {formattedFirstName},</h1>
           <h2 className="text-4xl font-semibold mb-3">Refer & Earn Rewards</h2>
           <p className="text-lg mb-5">Invite your friends and earn cash or credits</p>
           <div className="flex items-center space-x-4">

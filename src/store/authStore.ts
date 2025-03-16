@@ -241,7 +241,7 @@ export const useAuthStore = create<AuthState>()(
           const token = localStorage.getItem("authToken");
 
           const { data } = await axios.get(`${API_URL}/users/user-profile`, {
-            Credentials: true,
+            withCredentials: true,
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -267,8 +267,7 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error("Profile fetch error:", error);
           set({
-            error:
-              error.response?.data?.message || "Failed to load profile",
+            error: error.response?.data?.message || "Failed to load profile",
             isAuthenticated: false,
             isLoading: false,
             user: null,

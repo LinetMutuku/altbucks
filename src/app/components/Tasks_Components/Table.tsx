@@ -7,7 +7,7 @@ import { MdFilterList } from "react-icons/md";
 import { LuFileQuestion } from "react-icons/lu";
 import { IoIosSearch } from "react-icons/io";
 
-const TaskTable: React.FC = () => {
+const   TaskTable: React.FC = () => {
   return (
     <div className="w-full p-8 bg-white rounded-lg shadow-md font-Satoshi">
       <div className="flex justify-between items-center mb-4">

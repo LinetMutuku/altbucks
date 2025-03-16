@@ -10,9 +10,10 @@ import { TbBaselineDensityMedium } from "react-icons/tb";
 
 export default function Header() {
     const [isNavOpen, setIsNavOpen] = useState(false);
+    const [isSubNavOpen, setIsSubNavOpen] = useState(false)
 
   return (
-    <nav className='w-full h-[80px] flex items-center font-Satoshi'>
+    <nav className='w-full h-[80px] flex items-center font-Satoshi border-b border-b-gray-200'>
         <div className='h-fit w-[95%] mx-auto flex items-center justify-between '>
             
             <Link href={"/"} className='w-fit h-fit cursor-pointer'>
@@ -39,11 +40,18 @@ export default function Header() {
                         Dashboard
                     </Link>
                 </p>
-                <p className="h-fit w-fit text-gray-800  md:bg-blue-600 md:p-2 rounded-lg md:text-white tracking-wide">
-                    <Link href="/dashboard/task" className="flex gap-2 items-center">
-                    Tasks <FaAngleDown />
-                    </Link>
+                <div className='relative'>
+                <p className="flex gap-2 items-center h-fit w-fit text-gray-800  md:bg-blue-600 md:p-2 cursor-pointer rounded-lg md:text-white tracking-wide"
+                onClick={() => setIsSubNavOpen(!isSubNavOpen)}>
+                Tasks <FaAngleDown />
                 </p>
+                {isSubNavOpen && 
+                <p className="absolute text-gray-800 md:bg-white md:px-3 shadow-lg md:py-2 rounded-md md:text-black  w-36 tracking-wide">
+                    <Link href="/dashboard/application">
+                     My Application
+                    </Link>
+                </p>}
+                </div>
                 <p className="text-sm text-gray-800 md:text-gray-600 tracking-wide">
                     <Link href="/dashboard/my_wallet">My Wallet</Link>
                 </p>

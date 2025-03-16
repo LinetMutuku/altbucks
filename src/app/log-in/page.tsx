@@ -49,9 +49,9 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         try {
             setLoading(true);
-            await loginWithGoogle();
-            toast.success("Successfully logged in with Google!");
-            router.push("/dashboard");
+            await loginWithGoogle(router);
+            // toast.success("Successfully logged in with Google!");
+            // router.push("/dashboard");
         } catch (error: any) {
             console.error('Google login error:', error);
             let errorMessage = "Failed to login with Google. Please try again.";

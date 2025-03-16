@@ -2,8 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import axios from "axios";
 import { API_URL } from "@/lib/utils";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/firebase/config";
+import { auth } from "@/firebase/config";
 
 interface User {
   email: string;
@@ -11,6 +10,7 @@ interface User {
   lastName?: string;
   phoneNumber?: string;
   isTaskCreator?: boolean;
+  referralCode?: string;
   [key: string]: any;
 }
 
@@ -21,12 +21,13 @@ interface AuthState {
   error: string | null;
   isLoading: boolean;
   loginWithEmailAndPassword: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (router: any) => Promise<void>; 
   signup: (
     email: string,
     password: string,
     firstName: string,
     lastName: string,
+    referralCode: string | null,
     phoneNumber: string,
     confirmPassword: string
   ) => Promise<void>;
@@ -64,7 +65,6 @@ export const useAuthStore = create<AuthState>()(
           );
 
           if (response.data) {
-            console.log("Login Response:", response.data.data.isTaskCreator);
 
             set({
               user: response.data.user || { email },
@@ -89,50 +89,63 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      loginWithGoogle: async () => {
+      loginWithGoogle: async (router) => {
         set({ isLoading: true, error: null });
-        try {
-          const result = await signInWithPopup(auth, googleProvider);
-          const user = result.user;
-
-          const userInfo = {
-            email: user.email!,
-            firstName: user.displayName?.split(" ")[0] || "",
-            lastName: user.displayName?.split(" ").slice(1).join(" ") || "",
-            photoURL: user.photoURL,
-          };
-
-          const response = await axios.post(`${API_URL}/users/google-auth`, {
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            uid: user.uid,
-          });
-
-          if (response.data && response.data.token) {
-            localStorage.setItem("authToken", response.data.token);
-            document.cookie = `authToken=${response.data.token}; path=/; max-age=86400; SameSite=Strict`;
-          }
-
-          set({
-            user: userInfo,
-            isAuthenticated: true,
-            error: null,
-            isLoading: false,
-          });
-
-          const firebaseToken = await user.getIdToken();
-          localStorage.setItem("firebaseToken", firebaseToken);
-        } catch (error: any) {
-          console.error("Google login error:", error);
-          set({
-            error: error.message,
-            isLoading: false,
-            isAuthenticated: false,
-            user: null,
-          });
-          throw error;
+        
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        const redirectUri = "http://localhost:3000/auth/callback";
+      
+        if (!clientId || !redirectUri) {
+          console.error("Missing Google Client ID or Redirect URI.");
+          return;
         }
+      
+        const googleOAuthURL = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile&access_type=offline&prompt=select_account`;
+      
+        // Open in a popup window instead of redirecting
+        const popup = window.open(
+          googleOAuthURL,
+          "google-oauth-popup",
+          "width=500,height=600"
+        );
+      
+        if (!popup) {
+          console.error("Popup blocked. Allow popups for this site.");
+          return;
+        }
+      
+        // Listen for messages from the popup
+        window.addEventListener("message", (event) => {
+          if (event.origin !== window.location.origin) return; 
+      
+          if (event.data.type === "GOOGLE_AUTH_SUCCESS") {
+            const response = event.data.payload;
+            console.log("Google Auth Success:", response);
+            
+            set({
+              user: response.data,
+              isAuthenticated: true,
+              error: null,
+              isLoading: false,
+            })
+
+            localStorage.setItem("authToken", response.token);
+
+            const userDetails = event.data.payload
+            // Handle login success (e.g., store token, redirect)
+            const isTaskCreator = userDetails.data.isTaskCreator;
+            router.push(isTaskCreator ? "/dashboard-taskcreator" : "/dashboard");
+
+          }
+        });
+      
+        // Check if the popup closes
+        const interval = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(interval);
+            console.log("Popup closed. Fetching authentication status...");
+          }
+        }, 1000);
       },
 
       signup: async (
@@ -140,16 +153,25 @@ export const useAuthStore = create<AuthState>()(
         password,
         firstName,
         lastName,
+        referralCode,
         phoneNumber,
         confirmPassword
       ) => {
         set({ isLoading: true, error: null });
+        console.log("obj to send",   email,
+          password,
+          firstName,
+          lastName,
+          referralCode,
+          phoneNumber,
+          confirmPassword)
         try {
           const { data } = await axios.post(`${API_URL}/users/earn`, {
             email,
             password,
             firstName,
             lastName,
+            referralCode,
             phoneNumber,
             confirmPassword,
           });

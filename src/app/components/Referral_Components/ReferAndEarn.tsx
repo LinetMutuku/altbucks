@@ -1,15 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CiBookmark } from "react-icons/ci";
 import { PiWalletDuotone } from "react-icons/pi";
 import { MdKeyboardArrowRight } from "react-icons/md";
+import { useAuthStore } from '@/store/authStore';
+import ReferralInvite from '../share_overlay/ShareOverlay';
 
 const ReferAndEarn: React.FC = () => {
+  const { user} = useAuthStore();
+
+
+  //Referral Link Generation
+  const signUpUrl = "http://localhost:3000/sign-up/"; 
+  const referralCode = user?.referralCode || "DEFAULT_CODE";
+  const referralLink = `${signUpUrl}?ref=${referralCode}`;
+  const [isCopied, setIsCopied] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  console.log(referralLink)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(referralLink);
+    setIsCopied(true);
+
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
+
+
   const userName = "Smith";
-  const referralLink = "https://www.google.com/search?q=b...";
   const totalReferrals = 22;
   const pendingRewards = "2,202";
   const earnedRewards = 1700;
 
+  
   return (
     <div className="text-white py-6 px-6 flex flex-col space-y-10">
       {/* Header Section */}
@@ -27,13 +51,14 @@ const ReferAndEarn: React.FC = () => {
               className="bg-white text-gray-800 px-4 py-2 rounded-l-full w-full md:w-auto placeholder:text-gray-500 text-sm"
             />
             <button
-              onClick={() => navigator.clipboard.writeText(referralLink)}
+              onClick={handleCopy}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full text-sm"
             >
-              Copy
+              {isCopied ? "Copied" : "Copy"}
             </button>
             </div>
             <button
+              onClick={() => setShowOverlay(true)}
               className="bg-gray-800 hover:bg-opacity-80 text-sm bg-opacity-70 text-white px-4 py-3 rounded-r-full"
             >
               Share
@@ -49,8 +74,12 @@ const ReferAndEarn: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Section */}
+       {/* Overlay Modal (ReferralInvite) */}
+       {showOverlay && (
+        <ReferralInvite referralLink={referralLink} onClose={() => setShowOverlay(false)} />
+      )}
 
+      {/* Stats Section */}
       <div className="flex flex-col gap-3 md:flex-row justify-around items-center space-y-6 md:space-y-0">
         <div className="bg-white flex gap-2 items-center text-gray-800 rounded-lg px-6 py-4 shadow-md text-center w-64">
         <div className="p-1 bg-[#D4FEE5]">

@@ -6,17 +6,22 @@ import Image from 'next/image'
 import IllustrationImg from "../../../public/assets/Illustration.png";
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function Page() {
+    //Get referralCode(if any)
+    const searchParams = useSearchParams();
+    const referralCode = searchParams.get("ref");
+
     const [userData, setUserData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         phoneNumber: "",
         password: "",
+        referralCode: referralCode || null,
         confirmPassword: ""
     });
     const [loading, setLoading] = useState(false);
@@ -80,6 +85,7 @@ export default function Page() {
                 userData.password,
                 userData.firstName,
                 userData.lastName,
+                userData.referralCode,
                 userData.phoneNumber,
                 userData.confirmPassword
             );

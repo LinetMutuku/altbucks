@@ -19,7 +19,7 @@ export default function Header() {
             <Link href={"/"} className='w-fit h-fit cursor-pointer'>
                 <Image src={logoImg} alt='' className='w-[100px] aspect-auto'/>
             </Link>
-            <div className="relative z-50 w-1/2">
+            <div className="w-1/2">
                 {/* Toggle Button for Small Screens */}
                 <button
                     className="md:hidden flex justify-center w-full items-center gap-2 px-3 py-2 text-black"

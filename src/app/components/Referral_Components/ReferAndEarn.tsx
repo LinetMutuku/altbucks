@@ -71,6 +71,7 @@ const ReferAndEarn: React.FC = () => {
   : "";
   
   return (
+    <>
     <div className="text-white py-6 px-6 flex flex-col space-y-10">
       {/* Header Section */}
       <div className="bg-[#2877EA] flex rounded-lg px-12 py-4 flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
@@ -94,7 +95,7 @@ const ReferAndEarn: React.FC = () => {
             </button>
             </div>
             <button
-              onClick={() => setShowOverlay(true)}
+              onClick={() => setShowOverlay(!showOverlay)}
               className="bg-gray-800 hover:bg-opacity-80 text-sm bg-opacity-70 text-white px-4 py-3 rounded-r-full"
             >
               Share
@@ -109,11 +110,6 @@ const ReferAndEarn: React.FC = () => {
           />
         </div>
       </div>
-
-       {/* Overlay Modal (ReferralInvite) */}
-       {showOverlay && (
-        <ReferralInvite referralLink={referralLink} onClose={() => setShowOverlay(false)} />
-      )}
 
       {/* Stats Section */}
       <div className="flex flex-col gap-3 md:flex-row justify-around items-center space-y-6 md:space-y-0">
@@ -144,11 +140,11 @@ const ReferAndEarn: React.FC = () => {
       <div className="flex justify-center">
       <div className="flex justify-between w-2/3 mt-6 gap-8">
         <div className="flex flex-col gap-2">
-            <p className='text-black flex gap-1 items-center'>
+            <div className='text-black flex gap-1 items-center'>
                 <div className="p-1 bg-[#D2E1FE]">
                     <PiWalletDuotone className='text-[#2877EA]'/>
                     </div> 
-                    Money Available</p>
+                    Money Available</div>
         <div className="text-4xl font-bold text-black">£123,456.00</div>
         </div>
         <button className="flex gap-4 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-xl shadow-lg">
@@ -158,6 +154,12 @@ const ReferAndEarn: React.FC = () => {
       </div>
       </div>
     </div>
+    {/* Overlay Modal (ReferralInvite) */}
+    {showOverlay && (
+        <ReferralInvite referralLink={referralLink} isOpen={showOverlay} onClose={() => setShowOverlay(false)} />
+      )}
+
+</>
   );
 };
 

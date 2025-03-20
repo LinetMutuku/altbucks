@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CardSlider from "@/app/components/My_Wallet_Component/CardSlider";
+import CardSlider from "../../components/My_Wallet_Component/CardSlider";
 import { useMyContext } from "@/context";
 import Header from '../../components/My_Wallet_Component/Header';
 import bg from "../../../../public/assets/my_wallet/cardContainer.png"

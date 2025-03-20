@@ -7,7 +7,7 @@ import Header from '../../components/My_Wallet_Component/Header';
 import bg from "../../../../public/assets/my_wallet/cardContainer.png"
 import Icon from "../../../../public/assets/Icon.png";
 import Image from "next/image";
-import BarChart from "@/components/tables/earnerWalletTable";
+import BarChart from "../../../components/tables/earnerWalletTable";
 
 const Wallet: React.FC = () => {
   // const { isFundingOptionOpen, isPayoutAccountOpen, isWithdrawalOpen, isManualInputOpen, isAddAccountOpen, isOtpConfirmation, isHurrayOpen } = useMyContext()

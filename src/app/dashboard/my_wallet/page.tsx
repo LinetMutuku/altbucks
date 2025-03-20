@@ -36,25 +36,37 @@ const Wallet: React.FC = () => {
   } as const;
 
   // Client-side only code
-  const [isClient, setIsClient] = useState(false);
+ // const [isClient, setIsClient] = useState(false);
+
+  // Check if running on the client
+  const isClient = typeof window !== 'undefined';
 
   useEffect(() => {
-    setIsClient(true);
-
-    // Only run localStorage code in the browser
-    if (typeof window !== 'undefined') {
-      const savedTab = localStorage.getItem("activeTab");
+    if (isClient) {
+      const savedTab = localStorage.getItem('activeTab');
       if (savedTab && Object.keys(tableData).includes(savedTab)) {
         setActiveTab(savedTab as keyof typeof tableData);
       }
     }
-  }, []);
+  }, [isClient, tableData]);
+
+  // useEffect(() => {
+  //   setIsClient(true);
+  //
+  //   // Only run localStorage code in the browser
+  //   if (typeof window !== 'undefined') {
+  //     const savedTab = localStorage.getItem("activeTab");
+  //     if (savedTab && Object.keys(tableData).includes(savedTab)) {
+  //       setActiveTab(savedTab as keyof typeof tableData);
+  //     }
+  //   }
+  // }, []);
 
   // Save tab selection to localStorage - only in browser
   const handleTabClick = (label: keyof typeof tableData) => {
     setActiveTab(label);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("activeTab", label);
+    if (isClient) {
+      localStorage.setItem('activeTab', label);
     }
   };
 

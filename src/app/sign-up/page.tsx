@@ -1,27 +1,39 @@
 'use client';
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import Header from '../components/Authentication/Header'
 import Image from 'next/image'
 import IllustrationImg from "../../../public/assets/Illustration.png";
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function Page() {
-    //Get referralCode(if any)
+// Separate component for search params to use with Suspense
+function SearchParamsComponent({ onReferralCodeFound }: { onReferralCodeFound: (code: string | null) => void }) {
     const searchParams = useSearchParams();
     const referralCode = searchParams.get("ref");
 
+    useEffect(() => {
+        onReferralCodeFound(referralCode);
+    }, [referralCode, onReferralCodeFound]);
+
+    return null;
+}
+
+// Import useSearchParams here to avoid bundling it during server rendering
+import { useSearchParams } from 'next/navigation';
+
+export default function Page() {
+    const [referralCode, setReferralCode] = useState<string | null>(null);
     const [userData, setUserData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         phoneNumber: "",
         password: "",
-        referralCode: referralCode || null,
+        referralCode: null,
         confirmPassword: ""
     });
     const [loading, setLoading] = useState(false);
@@ -35,6 +47,14 @@ export default function Page() {
 
     const router = useRouter();
     const { signup } = useAuthStore();
+
+    // Update userData when referralCode changes
+    useEffect(() => {
+        setUserData(prev => ({
+            ...prev,
+            referralCode
+        }));
+    }, [referralCode]);
 
     // Validate email when it changes
     useEffect(() => {
@@ -102,6 +122,11 @@ export default function Page() {
     return (
         <div className='bg-[#2877EA] min-h-screen w-full'>
             <Header />
+            {/* Suspense for search params component */}
+            <Suspense fallback={null}>
+                <SearchParamsComponent onReferralCodeFound={setReferralCode} />
+            </Suspense>
+
             <div className='flex flex-col lg:flex-row justify-center lg:justify-around w-full px-4 lg:w-[90%] mx-auto mt-8 lg:mt-12 pb-12 lg:pb-24 gap-8 lg:gap-0'>
                 {/* Left section - Illustration */}
                 <div className='text-white flex flex-col gap-6 lg:gap-8 w-full lg:w-[30%]'>

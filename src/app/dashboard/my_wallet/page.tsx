@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CardSlider from "../../components/My_Wallet_Component/CardSlider";
+
+// Dynamically import the components with SSR disabled
+const CardSlider = dynamic(() => import('../../components/My_Wallet_Component/CardSlider'), { ssr: false });
+const BarChart = dynamic(() => import('../../../components/tables/earnerWalletTable'), { ssr: false });
+
 import { useMyContext } from "@/context";
 import Header from '../../components/My_Wallet_Component/Header';
 import bg from "../../../../public/assets/my_wallet/cardContainer.png"
 import Icon from "../../../../public/assets/Icon.png";
 import Image from "next/image";
-import BarChart from "../../../components/tables/earnerWalletTable";
+import dynamic from "next/dynamic";
 
 const Wallet: React.FC = () => {
   // const { isFundingOptionOpen, isPayoutAccountOpen, isWithdrawalOpen, isManualInputOpen, isAddAccountOpen, isOtpConfirmation, isHurrayOpen } = useMyContext()
@@ -36,37 +40,25 @@ const Wallet: React.FC = () => {
   } as const;
 
   // Client-side only code
- // const [isClient, setIsClient] = useState(false);
-
-  // Check if running on the client
-  const isClient = typeof window !== 'undefined';
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (isClient) {
-      const savedTab = localStorage.getItem('activeTab');
+    setIsClient(true);
+
+    // Only run localStorage code in the browser
+    if (typeof window !== 'undefined') {
+      const savedTab = localStorage.getItem("activeTab");
       if (savedTab && Object.keys(tableData).includes(savedTab)) {
         setActiveTab(savedTab as keyof typeof tableData);
       }
     }
-  }, [isClient, tableData]);
-
-  // useEffect(() => {
-  //   setIsClient(true);
-  //
-  //   // Only run localStorage code in the browser
-  //   if (typeof window !== 'undefined') {
-  //     const savedTab = localStorage.getItem("activeTab");
-  //     if (savedTab && Object.keys(tableData).includes(savedTab)) {
-  //       setActiveTab(savedTab as keyof typeof tableData);
-  //     }
-  //   }
-  // }, []);
+  }, []);
 
   // Save tab selection to localStorage - only in browser
   const handleTabClick = (label: keyof typeof tableData) => {
     setActiveTab(label);
-    if (isClient) {
-      localStorage.setItem('activeTab', label);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("activeTab", label);
     }
   };
 

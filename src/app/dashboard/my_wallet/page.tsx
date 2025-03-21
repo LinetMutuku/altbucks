@@ -1,19 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMyContext } from "@/context";
+import Header from '../../components/My_Wallet_Component/Header';
+import Image from "next/image";
+import dynamic from "next/dynamic";
 
 // Dynamically import the components with SSR disabled
 const CardSlider = dynamic(() => import('../../components/My_Wallet_Component/CardSlider'), { ssr: false });
 const BarChart = dynamic(() => import('../../../components/tables/earnerWalletTable'), { ssr: false });
 
-import { useMyContext } from "@/context";
-import Header from '../../components/My_Wallet_Component/Header';
-import bg from "../../../../public/assets/my_wallet/cardContainer.png"
+// Import images
+import bg from "../../../../public/assets/my_wallet/cardContainer.png";
 import Icon from "../../../../public/assets/Icon.png";
-import Image from "next/image";
-import dynamic from "next/dynamic";
 
-const Wallet: React.FC = () => {
+const Wallet = () => {
   // const { isFundingOptionOpen, isPayoutAccountOpen, isWithdrawalOpen, isManualInputOpen, isAddAccountOpen, isOtpConfirmation, isHurrayOpen } = useMyContext()
 
   const EarningsOverview = [
@@ -46,22 +47,17 @@ const Wallet: React.FC = () => {
     setIsClient(true);
 
     // Only run localStorage code in the browser
-    if (typeof window !== 'undefined') {
-      const savedTab = localStorage.getItem("activeTab");
-      if (savedTab && Object.keys(tableData).includes(savedTab)) {
-        setActiveTab(savedTab as keyof typeof tableData);
-      }
+    const savedTab = localStorage.getItem("activeTab");
+    if (savedTab && Object.keys(tableData).includes(savedTab)) {
+      setActiveTab(savedTab as keyof typeof tableData);
     }
   }, []);
 
   // Save tab selection to localStorage - only in browser
   const handleTabClick = (label: keyof typeof tableData) => {
     setActiveTab(label);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("activeTab", label);
-    }
+    localStorage.setItem("activeTab", label);
   };
-
 
   return (
       <>
@@ -121,7 +117,6 @@ const Wallet: React.FC = () => {
                         </div>
                       </div>
                   ))}
-
                 </div>
               </div>
             </section>
@@ -135,7 +130,7 @@ const Wallet: React.FC = () => {
                     {Object.keys(tableData).map((label) => (
                         <button
                             key={label}
-                            onClick={() => handleTabClick(label as keyof typeof tableData)}
+                            onClick={() => isClient && handleTabClick(label as keyof typeof tableData)}
                             className={`font-jakarta font-semibold text-[11px] ${
                                 activeTab === label
                                     ? "text-black font-bold border p-4 py-3 border-[#A1A1AA] rounded-[5px] flex justify-center items-center"
@@ -158,7 +153,7 @@ const Wallet: React.FC = () => {
                 </div>
               </div>
               <div>
-                <BarChart />
+                {isClient && <BarChart />}
               </div>
             </div>
           </div>
@@ -171,11 +166,10 @@ const Wallet: React.FC = () => {
                   src={bg}
                   alt="lines"
                   fill
-                  objectFit="cover"
                   className="absolute hidden lg:flex w-[389px] h-[650px] rounded-[10px] top-0 right-0"
               />
               <h3 className="font-bold text-2xl pb-28">My Cards</h3>
-              <CardSlider />
+              {isClient && <CardSlider />}
             </div>
 
             {/* Card Buttons */}
@@ -189,7 +183,9 @@ const Wallet: React.FC = () => {
             </div>
             <button className="w-[389px] xl:w-[486px] h-[98px] flex gap-4 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-xl shadow-lg">
               <div className="border border-white px-1 rounded-sm">
-                {isClient && <img src="/assets/withdraw-icon.png" alt="" className='w-8 h-8'/>}
+                {isClient && (
+                    <img src="/assets/withdraw-icon.png" alt="" className="w-8 h-8" />
+                )}
               </div>
               Withdraw
             </button>

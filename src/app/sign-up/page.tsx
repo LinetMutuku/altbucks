@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
 
-// Separate component for search params to use with Suspense
+
 function SearchParamsComponent({ onReferralCodeFound }: { onReferralCodeFound: (code: string | null) => void }) {
     const searchParams = useSearchParams();
     const referralCode = searchParams.get("ref");
@@ -135,7 +135,7 @@ export default function Page() {
                     <Image src={IllustrationImg} className='w-full max-w-md mx-auto lg:mx-0' alt='Illustration'/>
                 </div>
 
-                {/* Authentication Section */}
+
                 <div className='bg-white w-full lg:w-[50%] rounded-3xl px-6 sm:px-8 lg:px-16 py-8 lg:py-16 flex flex-col gap-4'>
                     <h4 className='text-black tracking-wide text-xl lg:text-2xl font-semibold'>Sign up now</h4>
                     <form className='flex w-full flex-col gap-4' onSubmit={handleSubmit}>

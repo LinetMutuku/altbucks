@@ -19,7 +19,7 @@ const PersonalProfile = () => {
         if (!token) return;
 
         const { data } = await axios.get(`${API_URL}/users/user-profile`, {
-          Credentials: true,
+          withCredentials: true,
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

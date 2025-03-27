@@ -65,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
           );
 
           if (response.data) {
+            console.log(response.data)
 
             set({
               user: response.data.user || { email },

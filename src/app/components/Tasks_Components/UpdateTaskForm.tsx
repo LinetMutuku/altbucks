@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoArrowBackOutline } from "react-icons/io5";
@@ -85,7 +86,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
             }
 
             const response = await fetch(
-                `https://authentication-1-bqvg.onrender.com/tasks/update/${taskId}`,
+                `${API_URL}/tasks/update/${taskId}`,
                 {
                     method: "PUT",
                     body: formData,

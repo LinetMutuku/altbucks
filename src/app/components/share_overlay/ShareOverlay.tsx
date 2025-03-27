@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Copy, Check, X } from "lucide-react";
 import { API_URL } from "@/lib/utils";
+import api from "@/lib/api";
 
 interface ReferralInviteProps {
   referralLink: string;
@@ -39,19 +40,13 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, onClose }
     
     setIsFetchingUsers(true);
     try {
-      const response = await fetch(`${API_URL}/api/v1/referrals/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get(`${API_URL}/api/v1/referrals/`);
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error("Failed to fetch invited users.");
       }
 
-      const data = await response.json();
+      const data = response.data;
       if (Array.isArray(data?.data)) {
         setInvitedUsers(data.data);
       }else {
@@ -64,7 +59,6 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, onClose }
     setIsFetchingUsers(false);
   };
 
-  console.log(invitedUsers)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -89,18 +83,12 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, onClose }
     setMessage("");
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/referrals/invite`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: inviteEmail }),
+      const response = await api.post(`${API_URL}/api/v1/referrals/invite`, {body: JSON.stringify({ email: inviteEmail }),
       });
 
-      const result = await response.json();
+      const result = await response.data;
 
-      if (response.ok) {
+      if (response) {
         setMessage("Invite sent successfully!");
         setInvitedUsers([...invitedUsers, { name: inviteEmail.split("@")[0], email: inviteEmail, status: "Invite sent" }]);
         setInviteEmail("");
@@ -117,7 +105,6 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, onClose }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white rounded-xl shadow-lg">
-      {/* Left: Referral Link + QR Code */}
       <div className="border rounded-lg p-6">
         <h3 className="text-lg font-semibold">Share your referral link</h3>
         <p className="text-gray-500">Share your link to get more rewards.</p>

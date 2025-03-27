@@ -6,6 +6,7 @@ import { X, Trash2 } from "lucide-react";
 import { useTaskStore } from "@/store/taskStore";
 import { toast } from 'react-toastify';
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import api from "@/lib/api";
 
 interface TaskDetailsProps {
     isOpen: boolean;
@@ -28,9 +29,7 @@ interface TaskDetailsProps {
 }
 
 const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const deleteTask = useTaskStore((state) => state.deleteTask);
-    const fetchTasks = useTaskStore((state) => state.fetchTasks);
+    const [isLoading, setIsLoading] = useState(false);
 
     const requirementsList = Array.isArray(task.requirements)
         ? task.requirements
@@ -38,26 +37,46 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
 
     if (!isOpen) return null;
 
+
+    if (!isOpen) return null;
+  
     const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-        });
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+    };
+  
+    const applyForTask = async () => {
+      setIsLoading(true);
+      try {
+        const userId = task._id; 
+        await api.post(`/api/v1/tasks/${userId}/applications`);
+  
+        toast.success("Application Successful! 🎉");
+      } catch (err: any) {
+        const errorMsg = err.response?.data?.message || "Something went wrong.";
+        toast.error(errorMsg);
+      } finally {
+        setIsLoading(false);
+        onClose();
+      }
     };
 
-    const handleDelete = async () => {
-        try {
-            await deleteTask(task._id);
-            toast.success('Task deleted successfully');
-            onClose();
-            await fetchTasks();
-        } catch (error) {
-            console.error('Failed to delete task:', error);
-            toast.error('Failed to delete task');
-        }
-    };
+  
+    // const handleDelete = async () => {
+    //     try {
+    //         await deleteTask(task._id);
+    //         toast.success('Task deleted successfully');
+    //         onClose();
+    //         await fetchTasks();
+    //     } catch (error) {
+    //         console.error('Failed to delete task:', error);
+    //         toast.error('Failed to delete task');
+    //     }
+    // };
 
     const modalContent = (
         <>
@@ -74,12 +93,12 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
                             </button>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button
+                            {/* <button
                                 onClick={() => setIsDeleteDialogOpen(true)}
                                 className="hover:bg-gray-100 p-2 rounded-full text-red-500 hover:text-red-600"
                             >
                                 <Trash2 className="w-5 h-5" />
-                            </button>
+                            </button> */}
                             <button
                                 onClick={onClose}
                                 className="text-gray-500 hover:text-gray-700"
@@ -100,7 +119,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
                             </div>
                             <div>
                                 <h3 className="text-gray-500 text-sm mb-1">Earnings</h3>
-                                <p className="text-gray-900 font-medium">${task.compensation?.amount.toFixed(2)}</p>
+                                <p className="text-gray-900 font-medium">${task.compensation.amount}</p>
                             </div>
                             <div>
                                 <h3 className="text-gray-500 text-sm mb-1">Deadline</h3>
@@ -110,7 +129,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
 
                         <div className="space-y-6">
                             <section>
-                                <h3 className="text-gray-900 font-medium mb-2">Description</h3>
+                                <h3 className="text-gray-900 font-medium mb-2 ">Description</h3>
                                 <p className="text-gray-600">{task.description}</p>
                             </section>
 
@@ -178,19 +197,23 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
                     </div>
 
                     {/* Footer */}
-                    <div className="border-t p-4">
-                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md font-medium transition-colors duration-200">
-                            Start Task
+                    <div className="border-t p-4 flex justify-between">
+                        <button 
+                        onClick={applyForTask}
+                        disabled={isLoading}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md font-medium transition-colors duration-200"
+                        >
+                        {isLoading ? "Applying..." : "Apply for Task"}
                         </button>
                     </div>
                 </div>
             </div>
-
+{/* 
             <DeleteConfirmDialog
                 isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={handleDelete}
-            />
+            /> */}
         </>
     );
 

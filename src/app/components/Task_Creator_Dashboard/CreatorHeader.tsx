@@ -13,7 +13,7 @@ import { FaBookOpenReader } from "react-icons/fa6";
 import { IoBagOutline } from "react-icons/io5";
 import { usePathname } from 'next/navigation'
 
-export default function Header() {
+export default function CreatorHeader() {
     const router = useRouter();
     const pathname = usePathname()
     const [notificationModal, setNotificationModal] = useState(false)

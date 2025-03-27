@@ -1,30 +1,36 @@
 "use client"
 
 import AnalyticChart from '@/app/components/Task_Creator_Dashboard/AnalyticChart'
-import Header from '@/app/components/Task_Creator_Dashboard/Header'
-import TaskDuration from '@/app/components/Task_Creator_Dashboard/TaskDuractionChart'
+import Header from '@/app/components/Task_Creator_Dashboard/CreatorHeader'
+import TaskDuration from '@/app/components/Task_Creator_Dashboard/TaskDurationChart'
 import PopularTaskTable from '@/app/components/User-Dashboard/PopularTaskTable'
 import TaskPerformanceTask from '@/app/components/User-Dashboard/TaskPerformanceTask'
 import BarChart from '@/components/tables/earnerWalletTable'
 import React, { useEffect, useState } from 'react'
 
-export default function page() {
+export default function Page() {
   const tabs = ["Popular Task Analysis", "Worker Engagement", "Task Duration"];
-  const [activeTab, setActiveTab] = useState('1 Year');
+  const [activeTab, setActiveTab] = useState("1 Year");
 
-  const handleTabChange = (tab:string) => {
+  const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
 
-  // Load selected tab from localStorage (default to first tab if not found)
-  const [selected, setSelected] = useState<number>(() => {
-    return Number(localStorage.getItem("selectedTab")) || 0;
-  });
+  // Load selected tab from localStorage only on the client
+  const [selected, setSelected] = useState<number>(0);
+  const [isClient, setIsClient] = useState(false);
 
-  // Save selected tab to localStorage when it changes
   useEffect(() => {
-    localStorage.setItem("selectedTab", String(selected));
-  }, [selected]);
+    setIsClient(true); 
+    const storedTab = typeof window !== "undefined" ? localStorage.getItem("selectedTab") : "0";
+    setSelected(Number(storedTab) || 0);
+  }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem("selectedTab", String(selected));
+    }
+  }, [selected, isClient]);
 
   return (
     <>
@@ -65,7 +71,7 @@ export default function page() {
 
            <div className='px-4'>
               {/* Render based on selected tab */}
-              {selected === 0 && <PopularTaskTable />}   {/* Popular Task Analysis */}
+              {selected === 0 && <PopularTaskTable />}
               {selected === 1 && (
                 <div className='pl-5'>
                   <div className='flex justify-between'>

@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useEffect } from 'react';
-// import Card from './Card';
 import Card from "@/app/components/Tasks_Components/Card";
 import { Loader2 } from 'lucide-react';
 import { useTaskStore } from '@/store/taskStore';
 
 const RecentTasks = () => {
+    
     const { tasks, isLoading, error, fetchTasks } = useTaskStore();
 
     useEffect(() => {
@@ -55,11 +55,6 @@ const RecentTasks = () => {
                     <div
                         key={task._id}
                     >
-                        {/* <Card
-                            {...task}
-                            onTaskDeleted={fetchTasks}
-                            posted="Recently"
-                        /> */}
                         <Card key={index} {...task} />
                     </div>
                 ))}

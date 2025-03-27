@@ -1,56 +1,57 @@
 "use client";
 
 import CardSlider from "@/app/components/My_Wallet_Component/CardSlider";
-import { useMyContext } from "@/context";
 import Header from '../../components/My_Wallet_Component/Header';
 import bg from "../../../../public/assets/my_wallet/cardContainer.png"
 import Icon from "../../../../public/assets/Icon.png";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import BarChart from "@/components/tables/earnerWalletTable";
+import dynamic from "next/dynamic";
+import PaymentModal from "@/app/components/Dashboard_Components/PaymentModal";
 
+const BarChart = dynamic(() => import("@/components/tables/earnerWalletTable"), {
+  ssr: false, 
+});
 
 const Wallet: React.FC = () => {
-  // const { isFundingOptionOpen, isPayoutAccountOpen, isWithdrawalOpen, isManualInputOpen, isAddAccountOpen, isOtpConfirmation, isHurrayOpen } = useMyContext()
  
   const EarningsOverview = [
-    {
-      title: "Money Available",
-      amount: "$123, 456.00",
-    },
-    {
-      title: "Total Money Received",
-      amount: "$123, 456.00",
-    },
-    {
-      title: "Total Money Withdrawn",
-      amount: "$123, 456.00",
-    },
+    { title: "Money Available", amount: "$123, 456.00" },
+    { title: "Total Money Received", amount: "$123, 456.00" },
+    { title: "Total Money Withdrawn", amount: "$123, 456.00" },
   ];
 
-  const [activeTab, setActiveTab] = useState("Today");
+  const [activeTab, setActiveTab] = useState<keyof typeof tableData>("Today");
+  const [isClient, setIsClient] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const tableData = {
     "1 Year": [{ name: "John Doe", amount: "$5000", date: "2024-03-01" }],
     "30 Days": [{ name: "Alice Brown", amount: "$1200", date: "2024-02-29" }],
     "7 Days": [{ name: "Charlie Smith", amount: "$400", date: "2024-03-04" }],
     Today: [{ name: "David Wilson", amount: "$50", date: "2024-03-05" }],
   } as const;
-  
 
+  // Ensure code only runs on the client
   useEffect(() => {
+    setIsClient(true);
     const savedTab = localStorage.getItem("activeTab");
     if (savedTab && Object.keys(tableData).includes(savedTab)) {
       setActiveTab(savedTab as keyof typeof tableData);
     }
   }, []);
-  
 
   // Save tab selection to localStorage
   const handleTabClick = (label: keyof typeof tableData) => {
     setActiveTab(label);
-    localStorage.setItem("activeTab", label);
+    if (isClient) {
+      localStorage.setItem("activeTab", label);
+    }
   };
 
+  if (!isClient) {
+    return null; 
+  }
 
   return (
     <>
@@ -169,7 +170,7 @@ const Wallet: React.FC = () => {
 
           {/* Card Buttons */}
           <div className="flex gap-2 w-f">
-            <button className="border w-[50%] text-[14px] py-[12px] rounded-md">
+            <button onClick={() => setIsModalOpen(true)} className="border w-[50%] text-[14px] py-[12px] rounded-md">
               Add New Card
             </button>
             <button className="border w-[50%] text-[14px] py-[12px] rounded-md">
@@ -180,6 +181,7 @@ const Wallet: React.FC = () => {
                   <div className="border border-white px-1 rounded-sm"><img src="/assets/withdraw-icon.png" alt="" className='w-8 h-8'/></div>
                     Withdraw
             </button>
+            <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}/>
         </div>
       </div>
     </>

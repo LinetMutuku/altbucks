@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import HeroSection from "../components/User-Dashboard/HeroSection";
 import UserCards from "../components/User-Dashboard/UserCards";
 import LineGraph from "../components/User-Dashboard/LineGraph";
-import FeaturedTask from "../components/User-Dashboard/FeaturedTask";
+import FeaturedTask from "../components/task/FeaturedTask";
 import PersonalProfile from "../components/User-Dashboard/PersonalProfile";
 import TaskSummaryCard from "../components/User-Dashboard/TaskSummaryCard";
 import ReferralCard from "../components/User-Dashboard/ReferralCard";
@@ -29,16 +29,16 @@ export default function Dashboard() {
     const router = useRouter();
     const { isAuthenticated, user, profileAuth } = useAuthStore();
 
-    const handleButtonClick = () => {
-        console.log("Post a Task button clicked!");
-    };
-
     useEffect(() => {
         profileAuth();
         if (user?.isTaskCreator) {
             router.push("/dashboard_taskcreator");
         }
     }, [user, router, profileAuth]);
+
+    const handleButtonClick = () => {
+        router.push("/dashboard/task")
+    };    
 
 
 
@@ -59,7 +59,7 @@ export default function Dashboard() {
                             <HeroSection
                                 title="Build a hands-on team to work on your project faster and easier with"
                                 subtitle="We've got a whole new pack of updates coming soon, you'll love them."
-                                buttonText="Post a Task"
+                                buttonText="Start a Task"
                                 onButtonClick={handleButtonClick}
                                 imageSrc="/assets/Arrows(2).png"
                                 imageAlt="Illustration of arrows"

@@ -16,7 +16,7 @@ import Hurray from "@/app/components/My_Wallet_Component/walletModals/Hurray";
 import bg from "../../../../public/assets/my_wallet/cardContainer.png"
 import Image from "next/image";
 import TaskCreatorCard from "@/app/components/My_Wallet_Component/taskCreatorWalletCard";
-import Header from "@/app/components/Task_Creator_Dashboard/Header";
+import Header from "@/app/components/Task_Creator_Dashboard/CreatorHeader";
 
 
 const Wallet: React.FC = () => {

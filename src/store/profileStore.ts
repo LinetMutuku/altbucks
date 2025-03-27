@@ -77,7 +77,7 @@ export const useAccountSettingsStore = create<AccountSettingsStore>((set, get) =
                     lastName: 'Name'
                 },
                 {
-                    credentials: true,
+                    withCredentials: true,
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -154,7 +154,7 @@ export const useProfileInformationStore = create<ProfileInformationStore>((set, 
                 'https://altbucks-server-t.onrender.com/users/profile',
                 formData,
                 {
-                    credentials: true,
+                    withCredentials: true,
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'multipart/form-data'

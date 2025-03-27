@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { toast } from 'react-toastify';
 import { useTaskStore } from "@/store/taskStore"
+import api from "@/lib/api";
 
 interface CreateTaskFormProps {
     onClose: () => void;
@@ -11,7 +12,6 @@ interface CreateTaskFormProps {
 
 const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
     const fetchTasks = useTaskStore(state => state.fetchTasks);
-    const [isModalOpen, setModalOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [taskType, setTaskType] = useState("");
     const [description, setDescription] = useState("");
@@ -22,11 +22,9 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState<string>("");
-    const [currency, setCurrency] = useState({USD: true, EUR: false});
+    const [currency, setCurrency] = useState<string>("USD");
     const [noOfRespondents, setNoOfRespondents] = useState<string>("")
     const [loading, setLoading] = useState(false);
-
-    const handleModalClose = () => setModalOpen(false);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -46,28 +44,24 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
         formData.append("title", title);
         formData.append("requirements", requirements);
         formData.append("description", description);
-        formData.append("compensation", JSON.stringify({ amount, currency }));
+        formData.append("compensation", JSON.stringify({ currency, amount }));
         formData.append("noOfRespondents", noOfRespondents);
         formData.append("deadline", deadline);
         formData.append("link1", link1);
         formData.append("taskType", taskType);
         formData.append("location", location);
         formData.append("link2", link2);
-        // Append file if it exists
         if (files) {
-            formData.append("files", files);
-        }
+            formData.append("addInfo", files);
+          }
+   
         try {
-            const response = await fetch("https://authentication-1-bqvg.onrender.com/tasks/create", {
-                method: "POST",
-                body: formData,
-            });
-            if (!response.ok) {
+            const response = await api.post("/api/v1/tasks", formData);
+            if (!response) {
                 throw new Error("Task creation failed");
             }
-            const data = await response.json();
+            const data = await response.data;
             toast.success("Task created successfully");
-            // Fetch updated tasks and close modal
             await fetchTasks();
             onClose();
         } catch (error: any) {
@@ -138,9 +132,9 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                                 required
                             >
                                 <option value="">Choose Task Type</option>
-                                <option value="writing">Writing</option>
-                                <option value="review">Review</option>
-                                <option value="delivery">Delivery</option>
+                                <option value="Writing">Writing</option>
+                                <option value="Web Development">Review</option>
+                                <option value="Design">Delivery</option>
                             </select>
                         </div>
                         <div>

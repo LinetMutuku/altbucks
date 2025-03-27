@@ -5,6 +5,7 @@ import { MdKeyboardArrowRight } from "react-icons/md";
 import { useAuthStore } from '@/store/authStore';
 import ReferralInvite from '../share_overlay/ShareOverlay';
 import { API_URL } from '@/lib/utils';
+import api from '@/lib/api';
 
 const ReferAndEarn: React.FC = () => {
   const { user} = useAuthStore();
@@ -39,19 +40,13 @@ const ReferAndEarn: React.FC = () => {
   useEffect(() => {
     const fetchReferralStats = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/v1/referrals/stats`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get(`${API_URL}/api/v1/referrals/stats`);
   
-        if (!response.ok) {
+        if (!response) {
           throw new Error("Failed to fetch referral stats.");
         }
   
-        const data = await response.json();
+        const data = await response.data;
   
         setTotalReferrals(data?.data?.totalReferrals || 0);
         setPendingRewards(data?.data?.pendingRewards || 0);

@@ -1,4 +1,5 @@
 
+import api from '@/lib/api';
 import { create } from 'zustand';
 
 interface Task {
@@ -30,11 +31,10 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     fetchTasks: async () => {
         set({ isLoading: true, error: null });
         try {
-            const response = await fetch('https://authentication-1-bqvg.onrender.com/tasks/all');
-            if (!response.ok) throw new Error('Failed to fetch tasks');
-
-            const data = await response.json();
-            set({ tasks: data.tasks || data, isLoading: false });
+            const response = await api.get('api/v1/tasks/');
+            if (!response) throw new Error('Failed to fetch tasks');
+            const data = await response.data;
+            set({ tasks: data.data || data, isLoading: false });
         } catch (error) {
             console.error('Fetch error:', error);
             set({ error: (error as Error).message, isLoading: false });
@@ -43,11 +43,9 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
     deleteTask: async (taskId: string) => {
         try {
-            const response = await fetch(`https://authentication-1-bqvg.onrender.com/tasks/delete/${taskId}`, {
-                method: 'DELETE',
-            });
+            const response = await api.delete(`/tasks/delete/${taskId}`);
 
-            if (!response.ok) throw new Error('Failed to delete task');
+            if (!response) throw new Error('Failed to delete task');
 
             set((state) => ({
                 tasks: state.tasks.filter((task) => task._id !== taskId)

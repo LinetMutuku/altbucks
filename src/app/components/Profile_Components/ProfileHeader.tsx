@@ -7,6 +7,7 @@ import { FaDatabase } from 'react-icons/fa';
 import { useProfileInformationStore } from '@/store/profileStore';
 
 const ProfileHeader = ({ user }) => {
+    console.log("logged in user", user)
     // Get profile data from the store
     const {
         bio,

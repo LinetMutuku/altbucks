@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function GoogleAuthCallback() {
+function GoogleAuthCallbackInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
 
   useEffect(() => {
-    const code = searchParams.get("code"); 
-    console.log("OAuth Code:", code);
+    const code = searchParams?.get("code");
 
     if (!code) {
       console.error("No authorization code found");
@@ -25,7 +23,6 @@ export default function GoogleAuthCallback() {
     })
       .then((res) => res.json())
       .then((data) => {
-
         if (data.token) {
           // Send data back to the popup window
           if (window.opener) {
@@ -33,8 +30,8 @@ export default function GoogleAuthCallback() {
               { type: "GOOGLE_AUTH_SUCCESS", payload: data },
               window.location.origin
             );
-            window.close(); 
-          } 
+            window.close();
+          }
         } else {
           console.error("Google OAuth failed:", data);
           router.push("/log-in");
@@ -47,4 +44,12 @@ export default function GoogleAuthCallback() {
   }, [searchParams, router]);
 
   return <div>Authenticating with Google...</div>;
+}
+
+export default function GoogleAuthCallback() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GoogleAuthCallbackInner />
+    </Suspense>
+  );
 }

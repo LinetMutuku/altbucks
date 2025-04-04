@@ -15,7 +15,7 @@ const ReferAndEarn: React.FC = () => {
 
 
   //Referral Link Generation
-  const signUpUrl = "https://altbucks-ipat.vercel.app/sign-up/"; 
+  const signUpUrl = "https://vercel.com/eluferes-projects/alt-bucks/sign-up/"; 
   const referralCode = user?.referralCode || "DEFAULT_CODE";
   const referralLink = `${signUpUrl}?ref=${referralCode}`;
   

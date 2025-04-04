@@ -41,7 +41,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
         <h3 className="text-sm text-[#4C2909]">{taskType}</h3>
         <span
           className={`text-sm font-semibold ${
-            statusStyles[earnerStatus] || "text-gray-500"
+            statusStyles[earnerStatus as keyof typeof statusStyles] || "text-gray-500"
           }`}
         >
           ● {earnerStatus}

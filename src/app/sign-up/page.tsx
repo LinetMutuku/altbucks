@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import Header from '../components/Authentication/Header'
 import Image from 'next/image'
 import IllustrationImg from "../../../public/assets/Illustration.png";
@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function Page() {
+function SignUpPageContent() {
     //Get referralCode(if any)
     const searchParams = useSearchParams();
     const referralCode = searchParams?.get("ref");
@@ -258,3 +258,11 @@ export default function Page() {
         </div>
     )
 }
+
+export default function Page() {
+    return (
+      <Suspense fallback={<div>Loading...</div>}>
+        <SignUpPageContent />
+      </Suspense>
+    );
+  }

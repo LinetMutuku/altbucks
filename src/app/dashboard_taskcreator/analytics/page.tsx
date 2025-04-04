@@ -11,6 +11,8 @@ import api from '@/lib/api';
 import { API_URL } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 
+export const dynamic = 'force-dynamic';
+
 interface WorkerEngagement {
   date: string;
   count: number;

@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useEffect, useState } from 'react';
 import AnalyticChart from '@/app/components/Task_Creator_Dashboard/AnalyticChart';
 import CreatorHeader from '@/app/components/Task_Creator_Dashboard/CreatorHeader';

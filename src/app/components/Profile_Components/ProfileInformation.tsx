@@ -14,7 +14,7 @@ type User = {
     photoURL?: string;
   };
   
-  const ProfileInformation = ({ user }: { user: User }) => {
+  const ProfileInformation = ({ user }: { user: User | null }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
 
     // Get store actions and state - match function names with the store

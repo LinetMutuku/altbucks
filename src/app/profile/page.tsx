@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import Header from "../components/User-Dashboard/Header";
 import ProfileHeader from '../components/Profile_Components/ProfileHeader';

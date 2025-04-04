@@ -34,18 +34,6 @@ interface CustomJwtPayload extends JwtPayload {
     userId: string;
 }
 
-// Create an interface that matches what ViewProfile expects
-interface ViewProfileUser {
-    _id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    isTaskCreator: boolean;
-    referralCode: string;
-    // Add any other required fields
-}
-
 const Page: React.FC = () => {
     const { user, profileAuth } = useAuthStore();
     const router = useRouter();
@@ -103,14 +91,6 @@ const Page: React.FC = () => {
         return <div>Loading...</div>;
     }
 
-    // Check if user has all required fields before rendering ViewProfile
-    const hasRequiredUserFields = user &&
-        user.email &&
-        (user._id || user.id) &&
-        user.firstName &&
-        user.lastName &&
-        user.phoneNumber;
-
     return (
         <>
             <CreatorHeader />
@@ -134,20 +114,7 @@ const Page: React.FC = () => {
                 </div>
 
                 <div className="w-[28%] flex flex-col gap-5 justify-start">
-                    {hasRequiredUserFields && (
-                        <ViewProfile
-                            user={{
-                                _id: (user._id || user.id) as string,
-                                email: user.email as string,
-                                firstName: user.firstName as string,
-                                lastName: user.lastName as string,
-                                phoneNumber: user.phoneNumber as string,
-                                isTaskCreator: user.isTaskCreator || false,
-                                referralCode: user.referralCode || '',
-                                // Add any other required fields with default values
-                            }}
-                        />
-                    )}
+                    {user && <ViewProfile user={user} />}
                     <TaskTotal />
                     <WithdrawNow />
                 </div>

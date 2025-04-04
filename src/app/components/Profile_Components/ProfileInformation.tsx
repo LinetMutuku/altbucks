@@ -4,7 +4,18 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useProfileInformationStore } from '@/store/profileStore';
 
-const ProfileInformation = ({ user }) => {
+// Define an interface for the user prop
+interface UserProps {
+    photoURL?: string;
+    firstName?: string;
+    lastName?: string;
+    bio?: string;
+    expertise?: string;
+    languages?: string | string[];
+    location?: string;
+}
+
+const ProfileInformation = ({ user }: { user: UserProps | null }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
 
     // Get store actions and state - match function names with the store
@@ -54,8 +65,8 @@ const ProfileInformation = ({ user }) => {
         "Cape Town, South Africa", "Mexico City, Mexico"
     ];
 
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
         if (!file) return;
 
         if (file.size > 5 * 1024 * 1024) {
@@ -70,7 +81,7 @@ const ProfileInformation = ({ user }) => {
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            setImagePreview(e.target.result);
+            setImagePreview(e.target?.result as string);
             setAvatar(file);
             toast.success(`Image ${file.name} uploaded successfully`);
         };
@@ -78,12 +89,12 @@ const ProfileInformation = ({ user }) => {
     };
 
     // Handle language change - convert single value to array
-    const handleLanguageChange = (e) => {
+    const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         setLanguages(value ? [value] : []); // Pass as array
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         try {
@@ -95,7 +106,7 @@ const ProfileInformation = ({ user }) => {
             if (result && result.user && result.user.photoURL) {
                 setImagePreview(result.user.photoURL);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error in handleSubmit:', err);
             toast.error(err.response?.data?.message || 'Failed to update profile. Please try again.');
         }

@@ -46,21 +46,28 @@ export default function Page() {
   const [totalDuration, setTotalDuration] = useState<totalDurationAnalytics | null>(null);
   const [isClient, setIsClient] = useState(false);
 
+  // Check for client-side rendering
   useEffect(() => {
-    setIsClient(true);
     if (typeof window !== 'undefined') {
-      const storedTab = localStorage.getItem("selectedTab") || "0";
-      setSelected(Number(storedTab));
+      setIsClient(true);
     }
   }, []);
 
-   useEffect(() => {
-    if (isClient && typeof window !== 'undefined') {
+  useEffect(() => {
+    if (isClient) {
+      const storedTab = localStorage.getItem("selectedTab") || "0";
+      setSelected(Number(storedTab));
+    }
+  }, [isClient]);
+
+  useEffect(() => {
+    if (isClient) {
       localStorage.setItem("selectedTab", String(selected));
     }
   }, [selected, isClient]);
 
   const { analyticsData } = useTaskAnalytics(selected, activeRange);
+
 
   useEffect(() => {
     if (selected === 0) {

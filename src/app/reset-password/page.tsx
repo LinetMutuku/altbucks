@@ -6,6 +6,7 @@ import Image from 'next/image'
 import illustrationImg from "../../../public/assets/Illustration.png"
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
+import { API_URL } from "@/lib/utils";
 
 export default function ResetPasswordPage() {
     const [password, setPassword] = useState("");
@@ -94,7 +95,7 @@ export default function ResetPasswordPage() {
         setLoading(true);
 
         try {
-            const response = await fetch("https://authentication-1-bqvg.onrender.com/users/reset", {
+            const response = await fetch(`${API_URL}/users/reset`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -108,8 +109,6 @@ export default function ResetPasswordPage() {
             });
 
             const data = await response.json();
-
-            console.log("API Response:", data);
 
             if (response.ok && data.message.includes("Password has been reset successfully")) {
                 toast.success(data.message || "Password has been reset successfully");

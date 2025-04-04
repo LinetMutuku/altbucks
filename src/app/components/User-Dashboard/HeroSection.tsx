@@ -1,6 +1,5 @@
 "use client"; // Ensure this is a Client Component
 
-import profileImg from "../../../../public/assets/Rectangle 2225.png";
 import React from "react";
 
 interface HeroSectionProps {

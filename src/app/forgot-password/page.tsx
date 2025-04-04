@@ -5,6 +5,7 @@ import Header from '../components/Authentication/Header'
 import Image from 'next/image'
 import { toast } from 'react-toastify';
 import illustrationImg from "../../../public/assets/Illustration.png"
+import api from "@/lib/api";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -42,17 +43,11 @@ export default function ForgotPasswordPage() {
         setLoading(true);
 
         try {
-            const response = await fetch("https://authentication-1-bqvg.onrender.com/users/request", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email }),
-            });
+            const response = await api.post("/users/request", {body: JSON.stringify({ email })});
 
-            const data = await response.json();
+            const data = await response.data;
 
-            if (response.ok && data.message.includes("Password reset code sent")) {
+            if (response && data.message.includes("Password reset code sent")) {
                 toast.success("Verification code has been sent");
                 sessionStorage.setItem("resetEmail", email);
                 setTimeout(() => {

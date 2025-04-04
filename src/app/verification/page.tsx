@@ -6,6 +6,7 @@ import Header from "../components/Authentication/Header";
 import Image from "next/image";
 import illustrationImg from "../../../public/assets/Illustration.png";
 import { toast } from "react-toastify";
+import { API_URL } from "@/lib/utils";
 
 export default function VerificationPage() {
     const [code, setCode] = useState(["", "", "", "", ""]);
@@ -31,7 +32,7 @@ export default function VerificationPage() {
         setLoading(true);
 
         try {
-            const response = await fetch("https://authentication-1-bqvg.onrender.com/users/verify", {
+            const response = await fetch(`${API_URL}/users/verify`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from 'react';
 import { AiTwotoneSchedule } from "react-icons/ai";
 import { CiStar } from "react-icons/ci";
@@ -6,7 +6,28 @@ import { BsFillPatchCheckFill, BsGeoAlt } from "react-icons/bs";
 import { FaDatabase } from 'react-icons/fa';
 import { useProfileInformationStore } from '@/store/profileStore';
 
-const ProfileHeader = ({ user }) => {
+// Define types for user data
+interface User {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  location?: string;
+  email?: string;
+  phoneNumber?: string;
+  photoURL?: string;
+  tasksCompleted?: number;
+  totalEarnings?: number;
+  averageRating?: number;
+  successRate?: number;
+}
+
+interface ProfileHeaderProps {
+  user: User; // user passed as prop
+}
+
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
+    console.log("logged in user", user);
+    
     // Get profile data from the store
     const {
         bio,
@@ -19,10 +40,10 @@ const ProfileHeader = ({ user }) => {
     } = useProfileInformationStore();
 
     // Local state for image preview
-    const [imagePreview, setImagePreview] = useState(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     // Local state for user data
-    const [userData, setUserData] = useState({
+    const [userData, setUserData] = useState<User>({
         ...user,
         firstName: firstName || user?.firstName || '',
         lastName: lastName || user?.lastName || '',
@@ -36,7 +57,7 @@ const ProfileHeader = ({ user }) => {
             // For new file uploads, create a preview
             const reader = new FileReader();
             reader.onload = (e) => {
-                setImagePreview(e.target.result);
+                setImagePreview(e.target?.result as string);
             };
             reader.readAsDataURL(avatar);
         } else if (user?.photoURL) {
@@ -65,7 +86,7 @@ const ProfileHeader = ({ user }) => {
         const totalFields = fields.length;
 
         fields.forEach(field => {
-            if (userData[field]) completed++;
+            if (userData[field as keyof User]) completed++;
         });
 
         return Math.round((completed / totalFields) * 100);

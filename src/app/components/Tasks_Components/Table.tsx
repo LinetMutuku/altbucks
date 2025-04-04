@@ -1,29 +1,60 @@
-"use client"
+"use client";
 
-import React from "react";
-import { TableData } from "./CardsData";
+import React, { useState, useRef, useEffect } from "react";
 import { HiDotsVertical } from "react-icons/hi";
-import { MdFilterList } from "react-icons/md";
 import { LuFileQuestion } from "react-icons/lu";
-import { IoIosSearch } from "react-icons/io";
+import { FaTrashAlt } from "react-icons/fa";
+import { IoEyeSharp } from "react-icons/io5";
+import { MdDoneAll, MdPendingActions } from "react-icons/md";
+import { TaskApplication } from "@/interface/TaskApplication";
+import api from "@/lib/api";
+import { API_URL } from "@/lib/utils";
+import { toast } from "react-toastify";
+import TaskDetails from "./TaskDetails";
 
-const   TaskTable: React.FC = () => {
+interface TaskTableProps {
+  tasks: TaskApplication[];
+}
+
+const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [isMenuOpen, setMenuOpen] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskApplication | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const updateTaskStatus = async (task: TaskApplication, status: "Approved" | "Rejected" | "Pending") => {
+    if (!task.taskId || !task._id) {
+      toast.error("Invalid task or application ID");
+      return;
+    }
+    try {
+      const response = await api.patch(
+        `${API_URL}/api/v1/tasks/${task.taskId._id}/applications/${task._id}/status`,
+        { reviewStatus: status }
+      );
+      if (response.status === 200) {
+        task.earnerStatus = status;
+        setMenuOpen(null);
+        toast.success(`Task status updated to ${status}`);
+      }
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      toast.error("Failed to update task status");
+    }
+  };
+
   return (
-    <div className="w-full p-8 bg-white rounded-lg shadow-md font-Satoshi">
-      <div className="flex justify-between items-center mb-4">
-      <div className="relative w-1/3">
-  <input
-    type="text"
-    placeholder="Search here..."
-    className="p-2 pl-10 border border-gray-300 rounded-md w-full focus:outline-none focus:ring focus:ring-gray-100"
-  />
-  <IoIosSearch className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"/>
-        </div>
-
-        <button className="flex items-center gap-2 px-3 py-1 border border-gray-300 rounded-md">
-          <MdFilterList className="text-xl"/> <span className="mr-2 font-medium">Filter</span>
-        </button>
-      </div>
+    <div className="w-full p-8 bg-[#FFFFFF] rounded-lg shadow-md font-Satoshi">
       <table className="w-full text-sm text-left text-gray-500">
         <thead className="text-xs text-gray-700 uppercase bg-gray-100">
           <tr>
@@ -32,38 +63,79 @@ const   TaskTable: React.FC = () => {
             <th className="px-4 py-2">Status</th>
             <th className="px-4 py-2">Deadline</th>
             <th className="px-4 py-2">Payout</th>
+            <th className="px-4 py-2">Earner Details</th>
             <th className="px-4 py-2"></th>
           </tr>
         </thead>
         <tbody>
-          {TableData.map((data, index) => (
-            <tr key={index} className="border-b">
-              <td className="px-4 py-2">
-                <div className="flex items-center">
-                  <div className="bg-purple-100 p-2 rounded-full">
-                  <LuFileQuestion className="text-xl"/>
-                  </div>
-                  <div className="ml-2">
-                    <div className="font-medium text-gray-800">{data.title}</div>
-                    <div className="text-gray-400 text-xs">{data.size}</div>
-                  </div>
+          {tasks.map((task) => (
+            <tr key={task._id} className="border-b">
+              <td className="px-4 py-2 flex items-center">
+                <div className="bg-purple-100 p-2 rounded-full">
+                  <LuFileQuestion className="text-xl" />
+                </div>
+                <div className="ml-2">
+                  <div className="font-medium text-gray-800">{task.taskId?.title}</div>
+                  <div className="text-gray-400 text-xs">20kb</div>
                 </div>
               </td>
-              <td className="px-4 py-2">{data.type}</td>
+              <td className="px-4 py-2">{task.taskId?.taskType}</td>
               <td className="px-4 py-2">
-                <span
-                  className={`px-2 py-1 text-xs rounded-md ${data.statusColor}`}
-                >
-                  {data.status}
+                <span className={`px-2 py-1 text-xs rounded-md ${
+                  task.earnerStatus === "In Progress" ? "bg-blue-100 text-blue-700" :
+                  task.earnerStatus === "Completed" ? "bg-green-100 text-green-700" :
+                  "bg-gray-100 text-gray-700"
+                }`}>
+                  {task.earnerStatus}
                 </span>
               </td>
-              <td className="px-4 py-2">{data.deadline}</td>
-              <td className="px-4 py-2">{data.payout}</td>
-              <td className="px-4 py-2"><HiDotsVertical /></td>
+              <td className="px-4 py-2">
+                {task.taskId?.deadline ? new Date(task.taskId.deadline).toLocaleDateString("en-US") : "N/A"}
+              </td>
+              <td className="px-4 py-2">${task.taskId?.compensation?.amount}</td>
+              <td className="px-4 py-2">
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-800">{task.email || "N/A"}</span>
+                <span className="text-gray-400 text-xs">{task.publicId || "N/A"}</span>
+              </div>
+            </td>
+              <td className="px-4 py-2 relative">
+                <button
+                  onClick={() => setMenuOpen(task._id)}
+                  className="p-2 rounded-full hover:bg-gray-100"
+                >
+                  <HiDotsVertical className="w-5 h-5 text-gray-600" />
+                </button>
+                {isMenuOpen === task._id && (
+                  <div ref={menuRef} className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border p-2 z-50">
+                    <button
+                      onClick={() => {
+                        setSelectedTask(task);
+                        setModalOpen(true);
+                      }}
+                      className="flex items-center gap-2 text-blue-600 w-full px-3 py-2 hover:bg-blue-50 rounded-md"
+                    >
+                      <IoEyeSharp className="text-lg" /> View Task
+                    </button>
+                    <button className="flex items-center gap-2 text-green-600 w-full px-3 py-2 hover:bg-green-50 rounded-md" onClick={() => updateTaskStatus(task, "Approved")}>
+                      <MdDoneAll className="text-lg" /> Mark Task as Complete
+                    </button>
+                    <button className="flex items-center gap-2 text-yellow-600 w-full px-3 py-2 hover:bg-yellow-50 rounded-md" onClick={() => updateTaskStatus(task, "Pending")}>
+                      <MdPendingActions className="text-lg" /> Mark Task as Pending
+                    </button>
+                    <button className="flex items-center gap-2 text-red-500 w-full px-3 py-2 hover:bg-red-50 rounded-md" onClick={() => updateTaskStatus(task, "Rejected")}>
+                      <FaTrashAlt className="text-lg" /> Reject Task
+                    </button>
+                  </div>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {isModalOpen && selectedTask && (
+        <TaskDetails isOpen={isModalOpen} onClose={() => setModalOpen(false)} task={selectedTask?.taskId} />
+      )}
     </div>
   );
 };

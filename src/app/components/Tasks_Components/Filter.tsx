@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useState } from "react";
 import { BsChevronUp } from "react-icons/bs";
 import { IoMdCheckmark } from "react-icons/io";
@@ -14,22 +15,21 @@ interface FilterSection {
   options: FilterOption[];
 }
 
-const Filter = () => {
-  const [filters, setFilters] = useState<{ [key: string]: string[] }>({
-    "Date posted": ["Past month"],
-    Skill: ["Design"],
-    "Number of Applications": ["5 - 10 Applications"],
-    "Task Pay": ["$150K - $200K"],
-  });
-  
+interface FilterProps {
+  onClick: () => void;
+  filters: { [key: string]: string[] };
+  setFilters: React.Dispatch<React.SetStateAction<{ [key: string]: string[] }>>;
+}
+
+const Filter: React.FC<FilterProps> = ({ filters, setFilters, onClick }) => {
   const filterSections: FilterSection[] = [
     {
       title: "Date posted",
       options: [
-        { label: "Anytime", value: "Anytime", count: 0 },
-        { label: "Past week", value: "Past week", count: 0 },
-        { label: "Past month", value: "Past month", count: 0 },
-        { label: "Past 24 hours", value: "Past 24 hours", count: 0 },
+        { label: "Anytime", value: "anytime", count: 0 },
+        { label: "Past week", value: "past_week", count: 0 },
+        { label: "Past month", value: "past_month", count: 0 },
+        { label: "Past 24 hours", value: "past_24_hours", count: 0 },
       ],
     },
     {
@@ -69,39 +69,22 @@ const Filter = () => {
     },
   ];
 
-  
-  const [showList, setShowList] = useState<{ [key: string]: boolean }>(filterSections.reduce((acc, section) => {
-    acc[section.title] = true;
-    return acc;
-  }, {} as { [key: string]: boolean })
-);
-
-  const skillColors: { [key: string]: string } = {
-    Design: "bg-purple-100 text-purple-700",
-    Product: "bg-blue-100 text-blue-700",
-    Marketing: "bg-indigo-100 text-indigo-700",
-    Management: "bg-pink-100 text-pink-700",
-    Sales: "bg-green-100 text-green-700",
-    Development: "bg-orange-100 text-orange-700",
-    Operations: "bg-yellow-100 text-yellow-700",
-    Engineering: "bg-cyan-100 text-cyan-700",
-    Other: "bg-gray-100 text-gray-700",
-  };
+  const [showList, setShowList] = useState<{ [key: string]: boolean }>(
+    filterSections.reduce((acc, section) => {
+      acc[section.title] = true;
+      return acc;
+    }, {} as { [key: string]: boolean })
+  );
 
   const toggleOption = (section: string, value: string) => {
     setFilters((prev) => {
       const sectionFilters = prev[section] || [];
-      if (sectionFilters.includes(value)) {
-        return {
-          ...prev,
-          [section]: sectionFilters.filter((v) => v !== value),
-        };
-      } else {
-        return {
-          ...prev,
-          [section]: [...sectionFilters, value],
-        };
-      }
+      return {
+        ...prev,
+        [section]: sectionFilters.includes(value)
+          ? sectionFilters.filter((v) => v !== value)
+          : [...sectionFilters, value],
+      };
     });
   };
 
@@ -116,10 +99,27 @@ const Filter = () => {
     setFilters({});
   };
 
+  const skillColors: { [key: string]: string } = {
+    Design: "bg-purple-100 text-purple-700",
+    Product: "bg-blue-100 text-blue-700",
+    Marketing: "bg-indigo-100 text-indigo-700",
+    Management: "bg-pink-100 text-pink-700",
+    Sales: "bg-green-100 text-green-700",
+    Development: "bg-orange-100 text-orange-700",
+    Operations: "bg-yellow-100 text-yellow-700",
+    Engineering: "bg-cyan-100 text-cyan-700",
+    Other: "bg-gray-100 text-gray-700",
+  };
+
   return (
-    <div className="w-full lg:w-72 bg-white font-Satoshi text-gray-800 rounded-lg">
+    <div className="w-full lg:w-60 bg-white font-Satoshi text-gray-800 rounded-lg">
       <div className="flex justify-between items-center  px-4 py-2 mb-4 border-b border-b-gray-300">
-        <h2 className="text-lg font-semibold">Filter</h2>
+        <button
+            onClick={onClick}
+            className="text-blue-500 hover:underline text-sm"
+        >
+          Apply
+        </button>
         <button
           onClick={clearAll}
           className="text-red-500 hover:underline text-sm"

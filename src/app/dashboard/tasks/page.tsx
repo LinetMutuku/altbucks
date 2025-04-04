@@ -1,15 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "@/app/components/Tasks_Components/Card";
 import { CardsData } from "@/app/components/Tasks_Components/CardsData";
 import Filter from "@/app/components/Tasks_Components/Filter";
 import { IoClose, IoSearchOutline } from "react-icons/io5";
 import { MdFilterList } from "react-icons/md";
 import Header from "@/app/components/Tasks_Components/Header";
+import useTasks from "@/hooks/useTask";
+import useScrollToTop from "@/hooks/useScrollToTop";
+import Pagination from "@/app/components/Pagination/Pagination";
+import { FaSpinner } from "react-icons/fa";
+import api from "@/lib/api";
+import { title } from "process";
 
 const Tasks: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResult, setSearchResult] = useState<any[]>([]);
+  const [filters, setFilters] = useState<{ [key: string]: string[] }>({});
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
+  const { tasks, isLoading, error, totalPages } = useTasks(page, pageSize);
+
+  useScrollToTop(page);
+
+  // Function to get ISO date range
+  const getISODateRange = (dateRanges: string[]) => {
+    const now = new Date();
+    let minDate = now; // Start with current date
+
+    dateRanges.forEach((range) => {
+      let calculatedDate = new Date(now); // Copy current date
+
+      switch (range) {
+        case "past_24_hours":
+          calculatedDate.setHours(now.getHours() - 24);
+          break;
+        case "past_week":
+          calculatedDate.setDate(now.getDate() - 7);
+          break;
+        case "past_month":
+          calculatedDate.setDate(now.getDate() - 30);
+          break;
+        case "anytime":
+        default:
+          return; // Don't modify for "anytime"
+      }
+
+      // Keep the oldest date (earliest timestamp)
+      if (calculatedDate < minDate) {
+        minDate = calculatedDate;
+      }
+    });
+
+    return minDate.toISOString();
+  };
+
+  const handleSearchAndFilter = async () => {
+    console.log("Current Filters:", filters);
+
+    const datePosted = getISODateRange(filters["Date posted"] || []); // Ensure it's an array
+
+    console.log("Converted ISO Date:", datePosted);
+
+    const payload: Record<string, any> = {
+      search: searchQuery,
+      taskType: filters["Skill"]?.[0] || "",
+      maxApplications: filters["Number of Applications"]?.[0] || "",
+      minApplications: filters["Number of Applications"]?.[1] || "",
+      maxPay: filters["Task Pay"]?.[0] || "",
+      minPay: filters["Task Pay"]?.[1] || "",
+      datePosted, // Now correctly formatted
+      page: 1, // Ensure we reset page to 1 for new searches
+      limit: 20,
+    };
+
+    Object.keys(payload).forEach((key) => {
+      if (
+        payload[key] === undefined ||
+        payload[key] === "" ||
+        (Array.isArray(payload[key]) && payload[key].length === 0)
+      ) {
+        delete payload[key];
+      }
+    });
+
+    console.log("Final Payload Sent to Backend:", payload);
+
+    try {
+      const response = await api.post("/api/v1/tasks/search", payload);
+      setSearchResult(response.data.data); // Update the search result state
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  // Use useEffect to re-fetch tasks whenever filters or searchQuery change
+  useEffect(() => {
+    handleSearchAndFilter(); // Fetch new data whenever searchQuery or filters change
+  }, [filters, searchQuery]);
+
 
   return (
     <>
@@ -33,6 +125,8 @@ const Tasks: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full p-3 pl-10 text-sm border rounded-md focus:ring-none focus:outline-none"
                 />
                 <div className="absolute left-3 top-3">
@@ -40,7 +134,10 @@ const Tasks: React.FC = () => {
                 </div>
               </div>
               {/* Explore Button */}
-              <button className="px-2 py-2 md:px-6 md:py-3 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none">
+              <button 
+                  onClick={handleSearchAndFilter}
+                  className="px-2 py-2 md:px-6 md:py-3 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none"
+              >
                 Explore
               </button>
             </div>
@@ -73,11 +170,11 @@ const Tasks: React.FC = () => {
             <div className="bg-white rounded-lg">
               <button
                 className="w-full flex justify-end bg-white rounded-lg p-2"
-                onClick={() => setIsFilterOpen(false)} // Close filter
+                onClick={() => setIsFilterOpen(false)} 
               >
                 <IoClose className="text-2xl right-2"/>
               </button>
-              <Filter />
+              <Filter filters={filters} setFilters={setFilters} onClick={handleSearchAndFilter}/>
             </div>
             </div>
           </div>
@@ -86,19 +183,44 @@ const Tasks: React.FC = () => {
         {/* Main Content */}
         <div className="flex gap-6">
           {/* Filter Section (Large Screens) */}
-          <div className="hidden md:block w-1/3 rounded-lg border border-gray-300">
-            <Filter />
+          <div className="hidden md:block w-80 rounded-lg border border-gray-300">
+          <Filter filters={filters} setFilters={setFilters} onClick={handleSearchAndFilter}/>
           </div>
 
-          {/* Cards Section */}
-          <div className="bg-white">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {CardsData.map((card, index) => (
+        {/* Cards Section */}
+        <div className="bg-white w-full">
+          {isLoading ? (
+            // Show Spinner while loading
+            <div className="flex justify-center items-center h-48">
+              <FaSpinner className="animate-spin text-blue-500 text-3xl" />
+            </div>
+          ) : error ? (
+            // Show error message
+            <p className="text-red-500 text-center">{error}</p>
+          ) : (searchResult.length > 0 ? (
+            // Show search results if available
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {searchResult.map((card, index) => (
                 <Card key={index} {...card} />
               ))}
             </div>
-          </div>
+          ) : (
+            // Show all tasks if no search results
+            tasks.length === 0 ? (
+              <p className="text-gray-500 text-center">No tasks available.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {tasks.map((card, index) => (
+                  <Card key={index} {...card} />
+                ))}
+              </div>
+            )
+          ))}
         </div>
+
+        {/* Pagination */}
+        </div>
+          <Pagination currentPage={page} totalPages={totalPages} setPage={setPage} />
       </div>
     </>
   );

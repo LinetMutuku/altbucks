@@ -8,13 +8,13 @@ import ProfileInformation from '../components/Profile_Components/ProfileInformat
 import AccountSettings from '../components/Profile_Components/AccountSettings';
 
 export default function ProfilePage() {
-    const { user, profileAuth } = useAuthStore();
+    const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState('profile');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    useEffect(() => {
-        profileAuth();
-    }, [profileAuth]);
+    // useEffect(() => {
+    //     profileAuth();
+    // }, [profileAuth]);
 
     return (
         <div className='min-h-screen w-full flex flex-col bg-white font-mulish overflow-x-hidden'>

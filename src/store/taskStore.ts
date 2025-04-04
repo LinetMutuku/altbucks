@@ -1,4 +1,4 @@
-
+import api from '@/lib/api';
 import { create } from 'zustand';
 
 interface Task {
@@ -18,7 +18,8 @@ interface TaskStore {
     tasks: Task[];
     isLoading: boolean;
     error: string | null;
-    fetchTasks: () => Promise<void>;
+    totalPages: number;
+    fetchTasks: (page?: number, limit?: number) => Promise<void>;
     deleteTask: (taskId: string) => Promise<void>;
 }
 
@@ -26,15 +27,20 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     tasks: [],
     isLoading: false,
     error: null,
+    totalPages: 1, 
 
-    fetchTasks: async () => {
+    fetchTasks: async (page = 1, limit = 10) => {
         set({ isLoading: true, error: null });
         try {
-            const response = await fetch('https://authentication-1-bqvg.onrender.com/tasks/all');
-            if (!response.ok) throw new Error('Failed to fetch tasks');
+            const response = await api.get(`api/v1/tasks?page=${page}&limit=${limit}`);
+            if (!response) throw new Error('Failed to fetch tasks');
 
-            const data = await response.json();
-            set({ tasks: data.tasks || data, isLoading: false });
+            const data = await response.data;
+            set({
+                tasks: data.data || data.tasks,
+                totalPages: data.totalPages || Math.ceil((data.totalCount || 1) / limit),
+                isLoading: false
+            });
         } catch (error) {
             console.error('Fetch error:', error);
             set({ error: (error as Error).message, isLoading: false });
@@ -43,11 +49,8 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
     deleteTask: async (taskId: string) => {
         try {
-            const response = await fetch(`https://authentication-1-bqvg.onrender.com/tasks/delete/${taskId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) throw new Error('Failed to delete task');
+            const response = await api.delete(`/tasks/delete/${taskId}`);
+            if (!response) throw new Error('Failed to delete task');
 
             set((state) => ({
                 tasks: state.tasks.filter((task) => task._id !== taskId)

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Copy, Check, X } from "lucide-react";
 import { API_URL } from "@/lib/utils";
+import api from "@/lib/api";
 
 interface ReferralInviteProps {
   referralLink: string;
@@ -17,12 +18,12 @@ interface InvitedUser {
   status: string;
 }
 
-const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, onClose}) => {
+const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, onClose }) => {
   const [token, setToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<string | null>("");  // Updated type
   const [invitedUsers, setInvitedUsers] = useState<InvitedUser[]>([]);
   const [isFetchingUsers, setIsFetchingUsers] = useState(true);
 
@@ -39,25 +40,18 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
   const fetchInvitedUsers = async () => {
     if (!token) return;
 
-    
     setIsFetchingUsers(true);
     try {
-      const response = await fetch(`${API_URL}/api/v1/referrals/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get(`${API_URL}/api/v1/referrals/`);
 
-      if (!response.ok) {
+      if (!response) {
         throw new Error("Failed to fetch invited users.");
       }
 
-      const data = await response.json();
+      const data = response.data;
       if (Array.isArray(data?.data)) {
         setInvitedUsers(data.data);
-      }else {
+      } else {
         setInvitedUsers([]);
       }
     } catch (error: any) {
@@ -66,8 +60,6 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
     }
     setIsFetchingUsers(false);
   };
-
-  console.log(invitedUsers)
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -89,21 +81,14 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
     }
 
     setLoading(true);
-    setMessage("");
+    setMessage(null);  // Clear previous message
 
     try {
-      const response = await fetch(`${API_URL}/api/v1/referrals/invite`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email: inviteEmail }),
-      });
+      const response = await api.post(`${API_URL}/api/v1/referrals/invite`, { body: JSON.stringify({ email: inviteEmail }) });
 
-      const result = await response.json();
+      const result = await response.data;
 
-      if (response.ok) {
+      if (response) {
         setMessage("Invite sent successfully!");
         setInvitedUsers([...invitedUsers, { name: inviteEmail.split("@")[0], email: inviteEmail, status: "Invite sent" }]);
         setInviteEmail("");
@@ -132,18 +117,12 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
     };
   }, [isOpen, onClose]);
 
-
   return (
-    <div className="font-inter fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div ref={modalRef} className="grid font-jakarta grid-cols-1 md:grid-cols-2 gap-3 p-3 bg-white rounded-xl h-[90%]  max-w-[80%] relative overflow-y-auto">
-      {/* Left: Referral Link + QR Code */}
-      <div className="border border-gray-300 rounded-l-3xl p-6">
-        <h3 className="text-lg font-semibold text-black">Share your referral link</h3>
-        <p className="text-gray-500 mt-1">Share your link to get more rewards.</p>
-        
-        <div className="mt-6">
-        <label className="text-gray-900">Referral Link</label>
-        <div className="flex items-center rounded-md mt-1">
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white rounded-xl shadow-lg">
+        <div className="border rounded-lg p-6">
+          <h3 className="text-lg font-semibold">Share your referral link</h3>
+          <p className="text-gray-500">Share your link to get more rewards.</p>
 
           <input
             type="text"
@@ -160,16 +139,15 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
             Copy
           </button>
         </div>
-        </div>
+      </div>
 
-        <div className="mt-4 text-center">
-          <div className="flex justify-center items-center gap-2">
+      <div className="mt-4 text-center">
+        <div className="flex justify-center items-center gap-2">
           <div className="border-b border-gray-400 w-28"></div>
           <p className="text-gray-800">Scan link to join</p>
           <div className="border-b border-gray-400 w-28"></div>
-          </div>
-          <div className="relative flex items-center justify-center p-4">
-      
+        </div>
+        <div className="relative flex items-center justify-center p-4">
           <div className="absolute inset-0 border-[4px] w-40 h-40 mx-auto mt-2 border-transparent">
             <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-blue-500 rounded-tl-2xl ml-auto"></div>
             <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-blue-500 rounded-tr-2xl"></div>
@@ -177,11 +155,10 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
             <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-blue-500 rounded-br-2xl"></div>
           </div>
           <QRCodeCanvas value={referralLink} size={130} className="mx-auto mt-2 border border-gray-400 rounded-lg p-1" />
-          </div>
-          <p className="text-gray-500 text-sm mt-2 w-56 mx-auto">
-            Scan this code with your phone to open your dashboard in the app.
-          </p>
         </div>
+        <p className="text-gray-500 text-sm mt-2 w-56 mx-auto">
+          Scan this code with your phone to open your dashboard in the app.
+        </p>
       </div>
 
       {/* Right: Invite People */}
@@ -191,25 +168,24 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
 
         {/* Invite by Email */}
         <div className="mt-6">
-        <label className="text-gray-900">Invite email</label>
-        <div className="flex items-center mt-1">
-          
-          <input
-            type="email"
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            placeholder="Enter email"
-            className="border  p-2 flex-1 focus:outline-none placeholder-black placeholder-opacity-50 rounded-l-full bg-white text-gray-900"
-          />
+          <label className="text-gray-900">Invite email</label>
+          <div className="flex items-center mt-1">
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="Enter email"
+              className="border p-2 flex-1 focus:outline-none placeholder-black placeholder-opacity-50 rounded-l-full bg-white text-gray-900"
+            />
 
-          <button
-            onClick={sendInvite}
-            disabled={loading}
-            className="bg-blue-600 text-white px-3 py-2 rounded-r-full border border-blue-600"
-          >
-            {loading ? "Sending..." : "Send invite"}
-          </button>
-        </div>
+            <button
+              onClick={sendInvite}
+              disabled={loading}
+              className="bg-blue-600 text-white px-3 py-2 rounded-r-full border border-blue-600"
+            >
+              {loading ? "Sending..." : "Send invite"}
+            </button>
+          </div>
         </div>
 
         {message && <p className="text-sm mt-2 text-gray-600">{message}</p>}
@@ -246,9 +222,8 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
           {(invitedUsers || []).filter((u) => u.status === "Invite accepted").length} invites have been accepted from your request
         </p>
       </div>
-    </div>
-    </div>
-  );
+  </>
+);
 };
 
 export default ReferralInvite;

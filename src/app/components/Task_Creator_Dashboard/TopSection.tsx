@@ -13,7 +13,7 @@ export default function TopSection() {
             <h3 className='text-2xl font-semibold text-white '>Build a hands-on team to work on your project faster and easier with.</h3>
             <p className='text-sm font-extralight text-white'>We've got a whole new pack of updates coming soon, you'll love them.</p>
             <button 
-              onClick={() => router.push("/dashboard_taskcreator/tasks") }
+              onClick={() => router.push("/dashboard_taskcreator/task") }
               className='bg-blue-600 w-fit h-fit px-8 text-white text-sm rounded-lg hover:bg-blue-700 transition-all duration-500 py-3'>Post a Task</button>
         </div>
         <Image src={user} alt='' className='w-[30%] z-20'/>

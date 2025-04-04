@@ -65,6 +65,7 @@ export const useAuthStore = create<AuthState>()(
           );
 
           if (response.data) {
+            console.log(response.data)
 
             set({
               user: response.data.user || { email },
@@ -93,7 +94,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        const redirectUri = "http://localhost:3000/auth/callback";
+        const redirectUri = "https://altbucks-ipat.vercel.app/auth/callback";
       
         if (!clientId || !redirectUri) {
           console.error("Missing Google Client ID or Redirect URI.");
@@ -237,19 +238,34 @@ export const useAuthStore = create<AuthState>()(
 
       profileAuth: async () => {
         set({ isLoading: true, error: null });
+      
         try {
           const token = localStorage.getItem("authToken");
-
+      
           const { data } = await axios.get(`${API_URL}/users/user-profile`, {
             withCredentials: true,
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-
+      
           const userData = data.profile || data.user || null;
-
-          if (userData) {
+      
+          if (!userData) {
+            set({
+              error: "No user data found in response",
+              isAuthenticated: false,
+              isLoading: false,
+              user: null,
+            });
+            return;
+          }
+      
+          //Compare with existing user
+          const currentUser = get().user;
+          const hasChanged = JSON.stringify(currentUser) !== JSON.stringify(userData);
+      
+          if (hasChanged) {
             set({
               user: userData,
               isAuthenticated: true,
@@ -257,14 +273,10 @@ export const useAuthStore = create<AuthState>()(
               error: null,
             });
           } else {
-            set({
-              error: "No user data found in response",
-              isAuthenticated: false,
-              isLoading: false,
-              user: null,
-            });
+            set({ isLoading: false }); 
           }
-        } catch (error) {
+      
+        } catch (error: any) {
           console.error("Profile fetch error:", error);
           set({
             error: error.response?.data?.message || "Failed to load profile",
@@ -274,6 +286,7 @@ export const useAuthStore = create<AuthState>()(
           });
         }
       },
+      
 
       logout: async () => {
         try {

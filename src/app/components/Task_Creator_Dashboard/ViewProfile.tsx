@@ -3,14 +3,13 @@ import Image from 'next/image'
 import React from 'react'
 import profileImage from "../../../../public/assets/52c8f0d76821a360324586d8bc58cc5f.png";
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
 
 // Define the user type
 interface User {
   _id: string;
   firstName: string;
   lastName: string;
-  profileImage?: string; // Optional field
+  profileImage?: string;
 }
 
 interface ViewProfileProps {

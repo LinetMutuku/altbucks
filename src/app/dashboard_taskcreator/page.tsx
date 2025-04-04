@@ -39,7 +39,7 @@ const Page: React.FC = () => {
   const router = useRouter();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     profileAuth();
@@ -73,14 +73,14 @@ const Page: React.FC = () => {
     const fetchDashboardData = async () => {
       try {
         const response = await api.get(
-          `${API_URL}/api/v1/tasks/task-creator/dashboard?userId=${userId}`
+            `${API_URL}/api/v1/tasks/task-creator/dashboard?userId=${userId}`
         );
         const data = await response.data;
         setDashboardData(data.dashboardData);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
-        setIsLoading(false); 
+        setIsLoading(false);
       }
     };
 
@@ -91,35 +91,41 @@ const Page: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  return (
-    <>
-      <CreatorHeader />
-      <div className="flex justify-between w-[95%] mx-auto mt-10 overflow-x-hidden">
-        <div className="w-[70%] flex flex-col gap-5">
-          <TopSection />
-          {dashboardData && (
-            <>
-              <UserInformation
-                totalAmountSpent={dashboardData.totalAmountSpent}
-                workInProgressTasks={dashboardData.workInProgressTasks}
-                completedTasks={dashboardData.completedTasks}
-              />
-              <UserChart
-                graphData={dashboardData.spendingOverTime.graphData}
-                taskEarningReport={dashboardData.spendingOverTime.taskEarningReport}
-              />
-            </>
-          )}
-          <FeaturedTask />
-        </div>
+  // Adapt the user object to include _id if it doesn't have it
+  const adaptedUser = user ? {
+    ...user,
+    _id: user._id || user.id // Use _id if it exists, otherwise use id
+  } : null;
 
-        <div className="w-[28%] flex flex-col gap-5 justify-start">
-          {user && <ViewProfile user={user} />}
-          <TaskTotal />
-          <WithdrawNow />
+  return (
+      <>
+        <CreatorHeader />
+        <div className="flex justify-between w-[95%] mx-auto mt-10 overflow-x-hidden">
+          <div className="w-[70%] flex flex-col gap-5">
+            <TopSection />
+            {dashboardData && (
+                <>
+                  <UserInformation
+                      totalAmountSpent={dashboardData.totalAmountSpent}
+                      workInProgressTasks={dashboardData.workInProgressTasks}
+                      completedTasks={dashboardData.completedTasks}
+                  />
+                  <UserChart
+                      graphData={dashboardData.spendingOverTime.graphData}
+                      taskEarningReport={dashboardData.spendingOverTime.taskEarningReport}
+                  />
+                </>
+            )}
+            <FeaturedTask />
+          </div>
+
+          <div className="w-[28%] flex flex-col gap-5 justify-start">
+            {adaptedUser && <ViewProfile user={adaptedUser} />}
+            <TaskTotal />
+            <WithdrawNow />
+          </div>
         </div>
-      </div>
-    </>
+      </>
   );
 };
 

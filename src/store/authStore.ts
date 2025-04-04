@@ -5,9 +5,10 @@ import { API_URL } from "@/lib/utils";
 import { auth } from "@/firebase/config";
 
 interface User {
+  _id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  firstName: string;
+  lastName: string;
   phoneNumber?: string;
   isTaskCreator?: boolean;
   referralCode?: string;

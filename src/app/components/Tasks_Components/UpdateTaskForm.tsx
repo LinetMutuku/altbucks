@@ -79,7 +79,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
             formData.append("link1", link1);
             formData.append("link2", link2);
             formData.append("amount", amount);
-            formData.append("currency", currency);
+            formData.append("currency", JSON.stringify(currency));
             formData.append("noOfRespondents", noOfRespondents);
             if (files) {
                 formData.append("files", files);

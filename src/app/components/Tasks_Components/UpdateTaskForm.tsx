@@ -26,7 +26,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState("");
-    const [currency, setCurrency] = useState({USD: true, EUR: false});
+    const [currency, setCurrency] = useState<string>("USD");
     const [noOfRespondents, setNoOfRespondents] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

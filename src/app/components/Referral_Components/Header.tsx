@@ -19,7 +19,7 @@ export default function Header() {
             <Link href={"/"} className='w-fit h-fit cursor-pointer'>
                 <Image src={logoImg} alt='' className='w-[100px] aspect-auto'/>
             </Link>
-            <div className="relative z-50 w-1/2">
+            <div className="w-1/2">
                 {/* Toggle Button for Small Screens */}
                 <button
                     className="md:hidden flex justify-center w-full items-center gap-2 px-3 py-2 text-black"
@@ -33,7 +33,7 @@ export default function Header() {
                     isNavOpen ? "block" : "hidden"
                     }`}
                 >
-                    <div className="flex flex-col gap-8 md:flex-row items-center h-full p-4 md:p-0 md:p-0">
+                    <div className="flex flex-col gap-8 md:flex-row items-center h-full p-4 md:p-0 ">
                         <div className="flex flex-col md:flex-row gap-3  items-start md:items-center">
                             <p className="text-sm text-gray-800 md:text-gray-600">
                                 <Link href="/dashboard" className="text-sm tracking-wide">

@@ -83,6 +83,7 @@ const ReferAndEarn: React.FC = () => {
   }
   
   return (
+    <>
     <div className="text-white py-6 px-6 flex flex-col space-y-10">
       {/* Header Section */}
       <div className="bg-[#2877EA] flex rounded-lg px-12 py-4 flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
@@ -106,7 +107,7 @@ const ReferAndEarn: React.FC = () => {
             </button>
             </div>
             <button
-              onClick={() => setShowOverlay(true)}
+              onClick={() => setShowOverlay(!showOverlay)}
               className="bg-gray-800 hover:bg-opacity-80 text-sm bg-opacity-70 text-white px-4 py-3 rounded-r-full"
             >
               Share
@@ -121,11 +122,6 @@ const ReferAndEarn: React.FC = () => {
           />
         </div>
       </div>
-
-       {/* Overlay Modal (ReferralInvite) */}
-       {showOverlay && (
-        <ReferralInvite referralLink={referralLink} onClose={() => setShowOverlay(false)} />
-      )}
 
       {/* Stats Section */}
       <div className="flex flex-col gap-3 md:flex-row justify-around items-center space-y-6 md:space-y-0">
@@ -177,6 +173,12 @@ const ReferAndEarn: React.FC = () => {
             mode={modalMode}
           />
     </div>
+    {/* Overlay Modal (ReferralInvite) */}
+    {showOverlay && (
+        <ReferralInvite referralLink={referralLink} isOpen={showOverlay} onClose={() => setShowOverlay(false)} />
+      )}
+
+</>
   );
 };
 

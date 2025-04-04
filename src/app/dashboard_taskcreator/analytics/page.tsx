@@ -1,5 +1,4 @@
-"use client";
-
+import React, { useEffect, useState } from 'react';
 import AnalyticChart from '@/app/components/Task_Creator_Dashboard/AnalyticChart';
 import CreatorHeader from '@/app/components/Task_Creator_Dashboard/CreatorHeader';
 import TaskDuration from '@/app/components/Task_Creator_Dashboard/TaskDurationChart';
@@ -9,7 +8,6 @@ import BarChart from '@/components/tables/earnerWalletTable';
 import useTaskAnalytics from '@/hooks/useTaskAnalytics';
 import api from '@/lib/api';
 import { API_URL } from '@/lib/utils';
-import React, { useEffect, useState } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +66,6 @@ export default function Page() {
 
   const { analyticsData } = useTaskAnalytics(selected, activeRange);
 
-
   useEffect(() => {
     if (selected === 0) {
       setPopularTasks(analyticsData);
@@ -83,12 +80,13 @@ export default function Page() {
     const fetchAnalyticsOverview = async () => {
       setLoading(true);
       try {
-        // Only access localStorage when on client side
-        const token = typeof window !== 'undefined' ? localStorage.getItem("authToken") : null;
-        if (!token) throw new Error("No authentication token found");
-        
-        const response = await api.get(`${API_URL}/api/v1/analytics/overview`);
-        setData(response.data.data);
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem("authToken");
+          if (!token) throw new Error("No authentication token found");
+
+          const response = await api.get(`${API_URL}/api/v1/analytics/overview`);
+          setData(response.data.data);
+        }
       } catch (err: any) {
         console.error("API Fetch Error:", err.response?.data || err.message);
         setError(err.response?.data?.message || "Error fetching analytics");
@@ -97,11 +95,13 @@ export default function Page() {
       }
     };
 
-    fetchAnalyticsOverview();
-  }, []);
+    if (isClient) {
+      fetchAnalyticsOverview();
+    }
+  }, [isClient]);
 
+  // Show a skeleton loader when not on client side (SSR)
   if (!isClient) {
-    // Return a skeleton loader or null during SSR
     return (
       <div className="bg-white min-h-screen">
         <div className="container mx-auto px-4 py-6">
@@ -148,18 +148,13 @@ export default function Page() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Detailed Reports</h2>
-              
-              {/* Tabs and Download Button */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+               {/* Tabs and Download Button */}
+               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div className="flex flex-wrap gap-2">
                   {tabs.map((tab, index) => (
                     <button
                       key={index}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                        selected === index 
-                          ? "bg-blue-600 text-white shadow-sm" 
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${selected === index ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-700 hover:bg-gray-100'}`}
                       onClick={() => setSelected(index)}
                     >
                       {tab}
@@ -173,14 +168,12 @@ export default function Page() {
 
               {/* Tab Content */}
               <div className="border-t border-gray-200 pt-6">
-                {/* Popular Task Analysis */}
                 {selected === 0 && (
                   <div className="overflow-x-auto">
                     <PopularTaskTable popularTasks={popularTasks} />
                   </div>
                 )}
 
-                {/* Worker Engagement */}
                 {selected === 1 && (
                   <div>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -190,11 +183,7 @@ export default function Page() {
                           <span className="text-3xl font-bold text-gray-900">
                             {workerEngagements?.workerEngagements?.reduce((total, entry) => total + entry.count, 0) || 0}
                           </span>
-                          <span className={`text-sm font-semibold ${
-                            (workerEngagements?.averageWorkerPerTask || 0) >= 0 
-                              ? 'text-green-600' 
-                              : 'text-red-600'
-                          }`}>
+                          <span className={`text-sm font-semibold ${(workerEngagements?.averageWorkerPerTask || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {workerEngagements?.averageWorkerPerTask?.toFixed(1) || 0}%
                           </span>
                         </div>
@@ -203,11 +192,7 @@ export default function Page() {
                         {["1y", "30d", "7d", "today"].map((period) => (
                           <button
                             key={period}
-                            className={`px-3 py-1.5 text-xs rounded-md border ${
-                              activeRange === period 
-                                ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' 
-                                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                            }`}
+                            className={`px-3 py-1.5 text-xs rounded-md border ${activeRange === period ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                             onClick={() => setActiveRange(period as "1y" | "30d" | "7d" | "today")}
                           >
                             {period}
@@ -221,7 +206,6 @@ export default function Page() {
                   </div>
                 )}
 
-                {/* Task Duration */}
                 {selected === 2 && (
                   <div>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -231,11 +215,7 @@ export default function Page() {
                           <span className="text-3xl font-bold text-gray-900">
                             {totalDuration?.totalAverageDuration || 0}
                           </span>
-                          <span className={`text-sm font-semibold ${
-                            (totalDuration?.percentageChange || 0) >= 0 
-                              ? 'text-green-600' 
-                              : 'text-red-600'
-                          }`}>
+                          <span className={`text-sm font-semibold ${(totalDuration?.percentageChange || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {totalDuration?.percentageChange || 0}%
                           </span>
                         </div>
@@ -244,11 +224,7 @@ export default function Page() {
                         {["1y", "30d", "7d", "today"].map((period) => (
                           <button
                             key={period}
-                            className={`px-3 py-1.5 text-xs rounded-md border ${
-                              activeRange === period 
-                                ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' 
-                                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                            }`}
+                            className={`px-3 py-1.5 text-xs rounded-md border ${activeRange === period ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                             onClick={() => setActiveRange(period as "1y" | "30d" | "7d" | "today")}
                           >
                             {period}

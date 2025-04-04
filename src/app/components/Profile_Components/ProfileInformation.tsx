@@ -99,13 +99,11 @@ const ProfileInformation = ({ user }: { user: UserProps | null }) => {
 
         try {
             // Use updateProfileInformation from the store
-            const result = await updateProfileInformation();
+            await updateProfileInformation();
             toast.success('Profile updated successfully!');
 
-            // If the backend returns an updated photoURL, update the preview
-            if (result && result.user && result.user.photoURL) {
-                setImagePreview(result.user.photoURL);
-            }
+            // Since we can't access the result directly, we can rely on the store state
+            // or just keep the current preview if it was updated
         } catch (err: any) {
             console.error('Error in handleSubmit:', err);
             toast.error(err.response?.data?.message || 'Failed to update profile. Please try again.');

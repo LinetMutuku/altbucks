@@ -137,11 +137,11 @@ const Page: React.FC = () => {
                     {hasRequiredUserFields && (
                         <ViewProfile
                             user={{
-                                _id: user._id || user.id,
-                                email: user.email,
-                                firstName: user.firstName,
-                                lastName: user.lastName,
-                                phoneNumber: user.phoneNumber,
+                                _id: (user._id || user.id) as string,
+                                email: user.email as string,
+                                firstName: user.firstName as string,
+                                lastName: user.lastName as string,
+                                phoneNumber: user.phoneNumber as string,
                                 isTaskCreator: user.isTaskCreator || false,
                                 referralCode: user.referralCode || '',
                                 // Add any other required fields with default values

@@ -2,7 +2,6 @@
 
 import AnalyticChart from '@/app/components/Task_Creator_Dashboard/AnalyticChart';
 import CreatorHeader from '@/app/components/Task_Creator_Dashboard/CreatorHeader';
-import Header from '@/app/components/Task_Creator_Dashboard/CreatorHeader';
 import TaskDuration from '@/app/components/Task_Creator_Dashboard/TaskDurationChart';
 import PopularTaskTable from '@/app/components/User-Dashboard/PopularTaskTable';
 import TaskPerformanceTask from '@/app/components/User-Dashboard/TaskPerformanceTask';
@@ -47,12 +46,14 @@ export default function Page() {
 
   useEffect(() => {
     setIsClient(true);
-    const storedTab = typeof window !== "undefined" ? localStorage.getItem("selectedTab") : "0";
-    setSelected(Number(storedTab) || 0);
+    if (typeof window !== 'undefined') {
+      const storedTab = localStorage.getItem("selectedTab") || "0";
+      setSelected(Number(storedTab));
+    }
   }, []);
 
-  useEffect(() => {
-    if (isClient) {
+   useEffect(() => {
+    if (isClient && typeof window !== 'undefined') {
       localStorage.setItem("selectedTab", String(selected));
     }
   }, [selected, isClient]);
@@ -73,8 +74,10 @@ export default function Page() {
     const fetchAnalyticsOverview = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("authToken");
+        // Only access localStorage when on client side
+        const token = typeof window !== 'undefined' ? localStorage.getItem("authToken") : null;
         if (!token) throw new Error("No authentication token found");
+        
         const response = await api.get(`${API_URL}/api/v1/analytics/overview`);
         setData(response.data.data);
       } catch (err: any) {
@@ -84,8 +87,21 @@ export default function Page() {
         setLoading(false);
       }
     };
+
     fetchAnalyticsOverview();
   }, []);
+
+  if (!isClient) {
+    // Return a skeleton loader or null during SSR
+    return (
+      <div className="bg-white min-h-screen">
+        <div className="container mx-auto px-4 py-6">
+          <div className="h-10 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -4,7 +4,17 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useProfileInformationStore } from '@/store/profileStore';
 
-const ProfileInformation = ({ user }) => {
+type User = {
+    firstName?: string;
+    lastName?: string;
+    bio?: string;
+    expertise?: string;
+    languages?: string[] | string;
+    location?: string;
+    photoURL?: string;
+  };
+  
+  const ProfileInformation = ({ user }: { user: User }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
 
     // Get store actions and state - match function names with the store
@@ -54,52 +64,51 @@ const ProfileInformation = ({ user }) => {
         "Cape Town, South Africa", "Mexico City, Mexico"
     ];
 
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]; // Use optional chaining in case it's null
+    
         if (!file) return;
-
+    
         if (file.size > 5 * 1024 * 1024) {
             toast.error('File is too large. Please select an image under 5MB.');
             return;
         }
-
+    
         if (!file.type.startsWith('image/')) {
             toast.error('Please select an image file.');
             return;
         }
-
+    
         const reader = new FileReader();
         reader.onload = (e) => {
-            setImagePreview(e.target.result);
-            setAvatar(file);
-            toast.success(`Image ${file.name} uploaded successfully`);
+            if (typeof e.target?.result === 'string') {
+                setImagePreview(e.target.result); // Safely set only if it's a string
+                setAvatar(file);
+                toast.success(`Image ${file.name} uploaded successfully`);
+            }
         };
         reader.readAsDataURL(file);
     };
+    
 
     // Handle language change - convert single value to array
-    const handleLanguageChange = (e) => {
+    const handleLanguageChange = (e: { target: { value: any; }; }) => {
         const value = e.target.value;
         setLanguages(value ? [value] : []); // Pass as array
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+      
         try {
-            // Use updateProfileInformation from the store
-            const result = await updateProfileInformation();
-            toast.success('Profile updated successfully!');
-
-            // If the backend returns an updated photoURL, update the preview
-            if (result && result.user && result.user.photoURL) {
-                setImagePreview(result.user.photoURL);
-            }
-        } catch (err) {
-            console.error('Error in handleSubmit:', err);
-            toast.error(err.response?.data?.message || 'Failed to update profile. Please try again.');
+          await updateProfileInformation(); // no result expected
+          toast.success('Profile updated successfully!');
+        } catch (err: any) {
+          console.error('Error in handleSubmit:', err);
+          toast.error(err?.response?.data?.message || 'Failed to update profile. Please try again.');
         }
-    };
+      };
+      
 
     // Get the current languages from the store
     const currentLanguages = useProfileInformationStore(state => state.languages);

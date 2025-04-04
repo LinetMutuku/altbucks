@@ -1,4 +1,5 @@
 "use client";
+import CreatorHeader from '@/app/components/Task_Creator_Dashboard/CreatorHeader';
 import Header from '@/app/components/Task_Creator_Dashboard/CreatorHeader'
 import TasksCreatorTasksRecentPosts from '@/app/components/Task_Creator_Dashboard/TaskCreator-Tasks-RecentPosts'
 import TaskCreatorTasksTaskList from '@/app/components/Task_Creator_Dashboard/TaskCreator-Tasks-TaskList'
@@ -73,7 +74,7 @@ export default function page() {
  
   return (
     <div className='relative z-10 h-fit flex flex-col gap-2 overflow-hidden'>
-      <Header />
+      <CreatorHeader />
       <div className='flex flex-col gap-5 justify-between w-[85%] mx-auto mt-10'>
         <TasksCreatorTasksRecentPosts 
           taskInfo={taskInfo} setTaskInfo={setTaskInfo}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "@/app/components/Tasks_Components/Card";
 import { CardsData } from "@/app/components/Tasks_Components/CardsData";
 import Filter from "@/app/components/Tasks_Components/Filter";
@@ -18,7 +18,7 @@ const Tasks: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState<any[]>([]);
-  const [filters, setFilters] = useState<{ [key: string]: string[] }>({}); 
+  const [filters, setFilters] = useState<{ [key: string]: string[] }>({});
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
@@ -26,34 +26,82 @@ const Tasks: React.FC = () => {
 
   useScrollToTop(page);
 
-  const handleSearchAndFilter = async () => {
-      const payload: Record<string, any> = {
-        search: searchQuery,
-        taskType: filters["Skill"]?.[0] || "", 
-        maxApplications: filters["Number of Applications"]?.[0] || "",
-        minApplications: filters["Number of Applications"]?.[1] || "",
-        maxPay: filters["Task Pay"]?.[0] || "",
-        minPay: filters["Task Pay"]?.[1] || "",
-        datePosted: filters["Date posted"]?.[0] || "",
-        page: 1,
-        limit: 20,
-      };
+  // Function to get ISO date range
+  const getISODateRange = (dateRanges: string[]) => {
+    const now = new Date();
+    let minDate = now; // Start with current date
 
-      Object.keys(payload).forEach((key) => {
-        if (payload[key] === undefined || payload[key] === "") {
-          delete payload[key];
-        }
-      })
+    dateRanges.forEach((range) => {
+      let calculatedDate = new Date(now); // Copy current date
+
+      switch (range) {
+        case "past_24_hours":
+          calculatedDate.setHours(now.getHours() - 24);
+          break;
+        case "past_week":
+          calculatedDate.setDate(now.getDate() - 7);
+          break;
+        case "past_month":
+          calculatedDate.setDate(now.getDate() - 30);
+          break;
+        case "anytime":
+        default:
+          return; // Don't modify for "anytime"
+      }
+
+      // Keep the oldest date (earliest timestamp)
+      if (calculatedDate < minDate) {
+        minDate = calculatedDate;
+      }
+    });
+
+    return minDate.toISOString();
+  };
+
+  const handleSearchAndFilter = async () => {
+    console.log("Current Filters:", filters);
+
+    const datePosted = getISODateRange(filters["Date posted"] || []); // Ensure it's an array
+
+    console.log("Converted ISO Date:", datePosted);
+
+    const payload: Record<string, any> = {
+      search: searchQuery,
+      taskType: filters["Skill"]?.[0] || "",
+      maxApplications: filters["Number of Applications"]?.[0] || "",
+      minApplications: filters["Number of Applications"]?.[1] || "",
+      maxPay: filters["Task Pay"]?.[0] || "",
+      minPay: filters["Task Pay"]?.[1] || "",
+      datePosted, // Now correctly formatted
+      page: 1, // Ensure we reset page to 1 for new searches
+      limit: 20,
+    };
+
+    Object.keys(payload).forEach((key) => {
+      if (
+        payload[key] === undefined ||
+        payload[key] === "" ||
+        (Array.isArray(payload[key]) && payload[key].length === 0)
+      ) {
+        delete payload[key];
+      }
+    });
+
+    console.log("Final Payload Sent to Backend:", payload);
 
     try {
       const response = await api.post("/api/v1/tasks/search", payload);
-
-      console.log("search result", response.data.data);
-      setSearchResult(response.data.data);
+      setSearchResult(response.data.data); // Update the search result state
     } catch (error) {
-      console.log("Error fetching tasks:", error);
+      console.error("Error fetching tasks:", error);
     }
   };
+
+  // Use useEffect to re-fetch tasks whenever filters or searchQuery change
+  useEffect(() => {
+    handleSearchAndFilter(); // Fetch new data whenever searchQuery or filters change
+  }, [filters, searchQuery]);
+
 
   return (
     <>
@@ -135,7 +183,7 @@ const Tasks: React.FC = () => {
         {/* Main Content */}
         <div className="flex gap-6">
           {/* Filter Section (Large Screens) */}
-          <div className="hidden md:block w-1/3 rounded-lg border border-gray-300">
+          <div className="hidden md:block w-80 rounded-lg border border-gray-300">
           <Filter filters={filters} setFilters={setFilters} onClick={handleSearchAndFilter}/>
           </div>
 

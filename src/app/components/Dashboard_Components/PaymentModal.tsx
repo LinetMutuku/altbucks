@@ -10,7 +10,7 @@ import clsx from 'clsx';
 // import SelectCardSlider from '../My_Wallet_Component/SelectCardSlider';
 import BankPaymentMethodModal from '../paymentMethod/BankPaymentMethodModal';
 import StripePayoutModal from '../paymentMethod/StripePayoutModal';
-import PayPalPayoutModal from '../paymentMethod/Paypal';
+// import PayPalPayoutModal from '../paymentMethod/Paypal';
 
 type PaymentModalProps = {
   isOpen: boolean;
@@ -28,10 +28,9 @@ const paymentMethods = [
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onBankAccountSelect }) => {
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showBankModal, setShowBankModal] = useState(false);
+  const [selectedPaymentMethod] = useState<any>(null);
+  const mode = 
 
-  console.log("selectedMethod", selectedMethod)
-
-  console.log("showBankModal", showBankModal)
 
   // Reset selection when modal closes
   useEffect(() => {
@@ -41,12 +40,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onBankAcco
     }
   }, [isOpen]);
 
-  const handleBankAccountSelect = (account: any) => {
-    if (onBankAccountSelect) {
-      onBankAccountSelect(account);
-    }
-    setShowBankModal(false);
-  };
 
   if (!isOpen) return null;
 
@@ -77,7 +70,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onBankAcco
                       return newMethod;
                     });
                   }}
-                                  className={clsx(
+                  className={clsx(
                   "flex h-[75px] items-center w-full border rounded-lg p-4 hover:bg-gray-50 transition-all duration-300 relative overflow-hidden",
                   {
                     '': selectedMethod === method.id,
@@ -107,55 +100,61 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onBankAcco
                   />
                 </div>
                  {/* Selection panel */}
-              <div 
-                 onClick={(e) => {
-                    e.stopPropagation();
-                    if (selectedMethod === method.id) {
-                      setShowBankModal(true);
-                    }
-                  }}
-                className={clsx(
-                "absolute right-0 top-0 h-full bg-gradient-to-r from-[#4A00E0] to-[#8E2DE2] text-white flex items-center justify-center text-sm px-4 transition-all duration-600",
-                "rounded-l-[30px]",
-                {
-                  'w-1/2': selectedMethod === method.id,
-                  'w-0': selectedMethod !== method.id,
-                  'opacity-100': selectedMethod === method.id,
-                  'opacity-0': selectedMethod !== method.id
-                }
-              )}
-              style={{ boxShadow: '23px 0px 18.2px 0px #00000040 inset' }}>
-                Click to Select Payout Bank Account
-              </div>
+                 <div 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (selectedMethod === method.id && !["paypal", "wise"].includes(selectedMethod)) {
+                        setShowBankModal(true);
+                      }
+                    }}
+                    className={clsx(
+                      "absolute right-0 top-0 h-full bg-gradient-to-r from-[#4A00E0] to-[#8E2DE2] text-white flex items-center justify-center text-sm px-4 transition-all duration-600",
+                      "rounded-l-[30px]",
+                      {
+                        'w-1/2': selectedMethod === method.id,
+                        'w-0': selectedMethod !== method.id,
+                        'opacity-100': selectedMethod === method.id,
+                        'opacity-0': selectedMethod !== method.id
+                      }
+                    )}
+                    style={{ boxShadow: '23px 0px 18.2px 0px #00000040 inset' }}
+                  >
+                    {["paypal", "wise"].includes(selectedMethod ?? "") 
+                      ? "Coming Soon" 
+                      : "Click to Select Payout Bank Account"}
+                  </div>
               </button>
             ))}
           </div>
         </div>
       </div>
 
+      
+
       {showBankModal && selectedMethod === "flutterwave" && (
-          <BankPaymentMethodModal onClose={() => setShowBankModal(false)}/>
+          <BankPaymentMethodModal  onClose={() => setShowBankModal(false)} gateway = {selectedMethod}  selectedMethod={selectedPaymentMethod} mode="add" />
       )}
 
-      {showBankModal && selectedMethod === "wise" && (
+      {/* {showBankModal && selectedMethod === "wise" && (
         <BankPaymentMethodModal onClose={() => setShowBankModal(false)}/>
-      )}
+      )} */}
 
       {showBankModal && selectedMethod === "stripe" && (
          <StripePayoutModal 
          isOpen={showBankModal} 
-         onClose={() => setShowBankModal(false)} 
-         onSubmit={(data) => console.log("Payout Data:", data)} 
+         onClose={() => setShowBankModal(false)}
+         selectedMethod={selectedPaymentMethod} 
+         mode="add"
        />
       )}
-
+{/* 
     {showBankModal && selectedMethod === "paypal" && (
       <PayPalPayoutModal
         isOpen={showBankModal} 
         onClose={() => setShowBankModal(false)} 
         onSubmit={(data) => console.log("PayPal Payout Data:", data)} 
       />
-    )}
+    )} */}
 
     </>
   );

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import TaskDetails from "./TaskDetails";
 import UpdateTaskForm from "./UpdateTaskForm";
 import { FaAngleRight } from "react-icons/fa";
+import { useAuthStore } from "@/store/authStore";
 
 interface TaskDetailsProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ const Card: React.FC = (props: any) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const [taskData, setTaskData] = useState(props); 
+  const { user } = useAuthStore()
+
 
   // Format Date Function (MM/DD/YYYY)
   const formatDate = (dateString: string) => {
@@ -36,7 +39,6 @@ const Card: React.FC = (props: any) => {
   };
 
   const handleTaskUpdate = (updatedTask: any) => {
-    console.log("Task updated in Card:", updatedTask);
     setTaskData(updatedTask);
     setIsUpdateOpen(false);
   };
@@ -49,7 +51,7 @@ const Card: React.FC = (props: any) => {
             <div className="flex justify-between items-center">
               <h2 className="text-md font-base">{taskData.title}</h2>
               <p className="text-black text-xs opacity-60">
-                Posted: {formatDate(taskData.posted)}
+                Posted: {formatDate(taskData.postedAt)}
               </p>
             </div>
             <p className="text-gray-500 text-sm mb-1">{taskData.taskType}</p>
@@ -78,6 +80,16 @@ const Card: React.FC = (props: any) => {
               </button>
             </div>
           </div>
+          {user?.isTaskCreator && (
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setIsUpdateOpen(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                >
+                Update Task
+              </button>
+            </div>
+            )}
         </div>
       </div>
 

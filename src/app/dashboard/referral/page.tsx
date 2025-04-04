@@ -21,6 +21,7 @@ const Task: React.FC = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
+
 export default Task;

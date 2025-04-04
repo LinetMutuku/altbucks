@@ -7,23 +7,32 @@ import Icon from "../../../../public/assets/Icon.png";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import PaymentModal from "@/app/components/Dashboard_Components/PaymentModal";
+import SelectBankModal from "@/app/components/paymentMethod/selelctBankModal";
+import useWallet from "@/hooks/useWallet";
+import LineGraph from "@/app/components/User-Dashboard/LineGraph";
 
 const BarChart = dynamic(() => import("@/components/tables/earnerWalletTable"), {
   ssr: false, 
 });
 
 const Wallet: React.FC = () => {
- 
-  const EarningsOverview = [
-    { title: "Money Available", amount: "$123, 456.00" },
-    { title: "Total Money Received", amount: "$123, 456.00" },
-    { title: "Total Money Withdrawn", amount: "$123, 456.00" },
-  ];
-
+  
   const [activeTab, setActiveTab] = useState<keyof typeof tableData>("Today");
   const [isClient, setIsClient] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add'); 
+  const { walletBalance, walletDetails, loading, error  } = useWallet();
+
+  const moneyAvailable = walletBalance?.balance ?? 0;
+  const totalMoneyReceived = walletDetails?.totalMoneyReceived ?? 0;
+  const totalMoneyWithdrawn = walletDetails?.totalMoneyWithdrawn ?? 0;
+  
+   const EarningsOverview = [
+     { title: "Money Available", amount: `$ ${moneyAvailable}` },
+     { title: "Total Money Received", amount: `$ ${totalMoneyReceived}` },
+     { title: "Total Money Withdrawn", amount: `$ ${totalMoneyWithdrawn}` },
+   ];
+
 
   const tableData = {
     "1 Year": [{ name: "John Doe", amount: "$5000", date: "2024-03-01" }],
@@ -52,6 +61,15 @@ const Wallet: React.FC = () => {
   if (!isClient) {
     return null; 
   }
+
+  const handleSelectBank = () => {
+    console.log("bank selected")
+  }
+
+  const handleOpenModal = (mode: 'add' | 'edit') => {
+    setModalMode(mode);
+    setIsModalOpen(true);
+  };
 
   return (
     <>
@@ -116,41 +134,8 @@ const Wallet: React.FC = () => {
             </div>
           </section>
               
-          <div className="h-[455px] flex flex-col px-9 py-5 mt-4 border border-gray-400 rounded-[10px]">
-            <div className="flex justify-between items-center ">
-              <span className="font-jakarta font-semibold text-base text-[#18181B] pb-4">Task Earning Report</span>
-              <div>
-                {/* Tabs */}
-                <div className="flex justify-center items-center gap-10 mb-5">
-                  {Object.keys(tableData).map((label) => (
-                    <button
-                      key={label}
-                      onClick={() => handleTabClick(label as keyof typeof tableData)}
-                      className={`font-jakarta font-semibold text-[11px] ${
-                        activeTab === label
-                          ? "text-black font-bold border p-4 py-3 border-[#A1A1AA] rounded-[5px] flex justify-center items-center"
-                          : "text-[#71717A] p-4"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex justify-center items-center mb-4 gap-2 border border-gray-400 px-4 py-2 rounded-[5px]">
-                <Image 
-                src={Icon}
-                alt=""
-                height={16.43}
-                width={11.11}
-                />
-                <span>Export PDF</span>
-              </div>
-            </div>
-              <div>
-                <BarChart />
-              </div>
-          </div>
+          <LineGraph />
+
         </div>
         {/* Right Side */}
         <div className="space-y-6">
@@ -170,18 +155,24 @@ const Wallet: React.FC = () => {
 
           {/* Card Buttons */}
           <div className="flex gap-2 w-f">
-            <button onClick={() => setIsModalOpen(true)} className="border w-[50%] text-[14px] py-[12px] rounded-md">
+            <button onClick={() => handleOpenModal('add')} className="border w-[50%] text-[14px] py-[12px] rounded-md">
               Add New Card
             </button>
-            <button className="border w-[50%] text-[14px] py-[12px] rounded-md">
+            <button  onClick={() => handleOpenModal('edit')} className="border w-[50%] text-[14px] py-[12px] rounded-md">
               Edit Card
             </button>
             </div>
-            <button className="w-[389px] xl:w-[486px] h-[98px] flex gap-4 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-xl shadow-lg">
+            <button onClick={() => handleOpenModal('add')} className="w-[389px] xl:w-[486px] h-[98px] flex gap-4 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-xl shadow-lg">
                   <div className="border border-white px-1 rounded-sm"><img src="/assets/withdraw-icon.png" alt="" className='w-8 h-8'/></div>
                     Withdraw
             </button>
-            <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}/>
+
+            <SelectBankModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSelect={handleSelectBank}
+              mode={modalMode}
+            />
         </div>
       </div>
     </>

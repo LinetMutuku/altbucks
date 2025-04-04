@@ -4,9 +4,20 @@ import Image from "next/image";
 import React from "react";
 import bannerImg from "../../../../public/assets/image 90.png";
 import { useRouter } from "next/navigation"; 
+import { useAuthStore } from "@/store/authStore";
 
 export default function Banner() {
   const router = useRouter();
+  const { user } = useAuthStore();
+
+
+  const handleNavigate = () => {
+    if(user?.isTaskCreator) {
+      router.push("/dashboard_taskcreator/task")
+    } else {
+      router.push("/dashboard/task")
+    }
+  };
 
   return (
     <div className="flex w-full items-center h-[700px] bg-[#F1F2F4]">
@@ -22,7 +33,7 @@ export default function Banner() {
             Complete micro-tasks, surveys, and more to earn rewards from the comfort of your home.
           </p>
           <button
-            onClick={() => router.push("/dashboard/task")}
+            onClick={handleNavigate}
             className="w-fit h-fit px-12 py-3 rounded-lg text-white text-sm tracking-wide bg-[#2877EA] hover:text-base transition-all duration-300 hover:bg-blue-700"
           >
             Get Started

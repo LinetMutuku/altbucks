@@ -17,13 +17,14 @@ import bg from "../../../../public/assets/my_wallet/cardContainer.png"
 import Image from "next/image";
 import TaskCreatorCard from "@/app/components/My_Wallet_Component/taskCreatorWalletCard";
 import Header from "@/app/components/Task_Creator_Dashboard/CreatorHeader";
+import CreatorHeader from "@/app/components/Task_Creator_Dashboard/CreatorHeader";
 
 
 const Wallet: React.FC = () => {
   const { isFundingOptionOpen, isPayoutAccountOpen, isWithdrawalOpen, isManualInputOpen, isAddAccountOpen, isOtpConfirmation, isHurrayOpen } = useMyContext()
   return (
     <>
-      <Header />
+      <CreatorHeader />
       <div className="container mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Side */}
         <div className="lg:col-span-2 space-y-6">

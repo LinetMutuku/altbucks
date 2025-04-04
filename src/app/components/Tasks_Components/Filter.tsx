@@ -26,10 +26,10 @@ const Filter: React.FC<FilterProps> = ({ filters, setFilters, onClick }) => {
     {
       title: "Date posted",
       options: [
-        { label: "Anytime", value: "Anytime", count: 0 },
-        { label: "Past week", value: "Past week", count: 0 },
-        { label: "Past month", value: "Past month", count: 0 },
-        { label: "Past 24 hours", value: "Past 24 hours", count: 0 },
+        { label: "Anytime", value: "anytime", count: 0 },
+        { label: "Past week", value: "past_week", count: 0 },
+        { label: "Past month", value: "past_month", count: 0 },
+        { label: "Past 24 hours", value: "past_24_hours", count: 0 },
       ],
     },
     {
@@ -112,7 +112,7 @@ const Filter: React.FC<FilterProps> = ({ filters, setFilters, onClick }) => {
   };
 
   return (
-    <div className="w-full lg:w-72 bg-white font-Satoshi text-gray-800 rounded-lg">
+    <div className="w-full lg:w-60 bg-white font-Satoshi text-gray-800 rounded-lg">
       <div className="flex justify-between items-center  px-4 py-2 mb-4 border-b border-b-gray-300">
         <button
             onClick={onClick}

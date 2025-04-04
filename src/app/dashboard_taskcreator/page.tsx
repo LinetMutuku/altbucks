@@ -13,6 +13,7 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import api from "@/lib/api";
 import { API_URL } from "@/lib/utils";
 import CreatorHeader from "../components/Task_Creator_Dashboard/CreatorHeader";
+import ViewProfile from "../components/Task_Creator_Dashboard/ViewProfile";
 
 interface DashboardData {
   totalAmountSpent: number;
@@ -93,7 +94,7 @@ const Page: React.FC = () => {
   return (
     <>
       <CreatorHeader />
-      <div className="flex justify-between w-[85%] mx-auto mt-10 overflow-x-hidden">
+      <div className="flex justify-between w-[95%] mx-auto mt-10 overflow-x-hidden">
         <div className="w-[70%] flex flex-col gap-5">
           <TopSection />
           {dashboardData && (
@@ -113,7 +114,7 @@ const Page: React.FC = () => {
         </div>
 
         <div className="w-[28%] flex flex-col gap-5 justify-start">
-          {/* {user && <ViewProfile user={user} />} */}
+          {user && <ViewProfile user={user} />}
           <TaskTotal />
           <WithdrawNow />
         </div>

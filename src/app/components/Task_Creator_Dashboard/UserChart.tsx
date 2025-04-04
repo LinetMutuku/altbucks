@@ -14,7 +14,6 @@ import {
 } from "recharts";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 
-
 interface GraphData {
   date: string;
   amount: number;
@@ -34,7 +33,6 @@ interface CustomJwtPayload extends JwtPayload {
   userId: string;
 }
 
-
 const UserChart = ({ graphData, taskEarningReport }: UserChartProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState("allTime");
   const [userId, setUserId] = useState<string | null>(null);
@@ -53,8 +51,24 @@ const UserChart = ({ graphData, taskEarningReport }: UserChartProps) => {
     }
   }, []);
 
-  // Filter graph data based on the selected period
-  const filteredGraphData = graphData.filter((entry) => {
+  // Format date to "MMM dd, yyyy" (e.g., Oct 20, 2029)
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  // Convert raw graph data to show only months on X-axis
+  const processedData = graphData.map((entry) => ({
+    ...entry,
+    month: new Date(entry.date).toLocaleString("en-US", { month: "short" }), // "Oct"
+  }));
+
+  // Filter graph data based on selected period
+  const filteredGraphData = processedData.filter((entry) => {
     const entryDate = new Date(entry.date);
     const now = new Date();
     switch (selectedPeriod) {
@@ -68,6 +82,23 @@ const UserChart = ({ graphData, taskEarningReport }: UserChartProps) => {
         return true; // All time
     }
   });
+
+  // Custom Tooltip to show date in "MMM dd, yyyy"
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 shadow-lg rounded-md border border-gray-200">
+          <p className="text-sm font-semibold text-gray-800">
+            {formatDate(payload[0].payload.date)}
+          </p>
+          <p className="text-xs text-gray-600">
+            Earnings: ${payload[0].value}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Handle Export PDF button click
   const handleExportPdf = async () => {
@@ -108,7 +139,6 @@ const UserChart = ({ graphData, taskEarningReport }: UserChartProps) => {
     }
   };
 
-
   return (
     <div className="bg-white rounded-lg p-6 flex flex-col gap-6 w-full">
       <h2 className="text-2xl font-bold">Spending Over Time</h2>
@@ -116,39 +146,27 @@ const UserChart = ({ graphData, taskEarningReport }: UserChartProps) => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-base font-bold text-black">Task Earning Report</h2>
           <div className="flex gap-4">
+            {["allTime", "last30Days", "last7Days", "today"].map((period) => (
+              <button
+                key={period}
+                onClick={() => setSelectedPeriod(period)}
+                className={`px-4 py-2 text-xs font-medium ${
+                  selectedPeriod === period ? "bg-blue-100" : "bg-gray-100"
+                } text-gray-600 rounded-md hover:bg-gray-200`}
+              >
+                {period === "allTime"
+                  ? "All time"
+                  : period === "last30Days"
+                  ? "30 Days"
+                  : period === "last7Days"
+                  ? "7 Days"
+                  : "Today"}
+              </button>
+            ))}
             <button
-              onClick={() => setSelectedPeriod("allTime")}
-              className={`px-4 py-2 text-xs font-medium ${
-                selectedPeriod === "allTime" ? "bg-blue-100" : "bg-gray-100"
-              } text-gray-600 rounded-md hover:bg-gray-200`}
+              onClick={handleExportPdf}
+              className="flex items-center bg-gray-100 text-gray-600 px-6 py-2 rounded-md shadow hover:bg-gray-200"
             >
-              All time
-            </button>
-            <button
-              onClick={() => setSelectedPeriod("last30Days")}
-              className={`px-4 py-2 text-xs font-medium ${
-                selectedPeriod === "last30Days" ? "bg-blue-100" : "bg-gray-100"
-              } text-gray-600 rounded-md hover:bg-gray-200`}
-            >
-              30 Days
-            </button>
-            <button
-              onClick={() => setSelectedPeriod("last7Days")}
-              className={`px-4 py-2 text-xs font-medium ${
-                selectedPeriod === "last7Days" ? "bg-blue-100" : "bg-gray-100"
-              } text-gray-600 rounded-md hover:bg-gray-200`}
-            >
-              7 Days
-            </button>
-            <button
-              onClick={() => setSelectedPeriod("today")}
-              className={`px-4 py-2 text-xs font-medium ${
-                selectedPeriod === "today" ? "bg-blue-100" : "bg-gray-100"
-              } text-gray-600 rounded-md hover:bg-gray-200`}
-            >
-              Today
-            </button>
-            <button onClick={handleExportPdf} className="flex items-center bg-gray-100 text-gray-600 px-6 py-0 rounded-md shadow hover:bg-gray-200">
               <span className="mr-2">Export PDF</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -176,14 +194,9 @@ const UserChart = ({ graphData, taskEarningReport }: UserChartProps) => {
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
               <CartesianGrid stroke="bg-white" strokeDasharray="none" />
-              <XAxis dataKey="date" />
+              <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                }}
-              />
+              <Tooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
                 dataKey="amount"

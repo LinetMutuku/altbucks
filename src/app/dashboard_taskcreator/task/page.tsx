@@ -30,6 +30,7 @@ const Task: React.FC = () => {
       if (!response) throw new Error("Failed to fetch tasks");
 
       const data = response.data.data;
+      console.log("when u walk", data)
       setTasks(data || []);
       setTotalPages(data?.pagination?.totalPages || 1);
     } catch (error) {
@@ -123,9 +124,8 @@ const Task: React.FC = () => {
             </button>
           </div>
 
-          {/* Task Table */}
           {tasks.length > 0 ? (
-            tasks.map((task, index) => <TaskTable key={index} taskApplication={task} />)
+            <TaskTable tasks={tasks} />
           ) : (
             <p className="text-center text-gray-500">No tasks found.</p>
           )}

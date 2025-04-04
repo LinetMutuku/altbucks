@@ -11,11 +11,12 @@ interface User{
   phoneNumber:string,  
 }
 
-// interface UserCardProps{
-//   user:User
-// }
+interface TaskPerformanceProps {
+  analyticData?: any;
+}
 
-const TaskPerformanceTask: React.FC = () => {
+
+const TaskPerformanceTask: React.FC<TaskPerformanceProps> = ({ analyticData  }) => {
   return (
     <div
       className="bg-white w-full flex flex-col sm:flex-row justify-between gap-4 sm:gap-6 rounded-lg 
@@ -38,7 +39,7 @@ const TaskPerformanceTask: React.FC = () => {
             Total Tasks Posted
           </h2>
           <p className="text-3xl max-lg:text-base font-semibold tracking-wide  ">
-            200
+            {analyticData.totalTasksPosted}
           </p>
         </div>
       </div>
@@ -57,7 +58,7 @@ const TaskPerformanceTask: React.FC = () => {
           Total Budget
           </h2>
           <p className="text-3xl max-lg:text-base font-semibold tracking-wide  ">
-          $1500
+          ${analyticData.totalBudget}
           </p>
         </div>
       </div>
@@ -76,7 +77,7 @@ const TaskPerformanceTask: React.FC = () => {
           Task Success Rate
           </h2>
           <p className="text-3xl max-lg:text-base font-semibold tracking-wide  ">
-            90%
+            {analyticData.taskSuccessRate}%
           </p>
         </div>
       </div>

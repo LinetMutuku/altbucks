@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 import { toast } from 'react-toastify';
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 
@@ -40,8 +41,10 @@ interface TaskDetailsProps {
 }
 
 const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
-  if (!isOpen || !task) return null;
+  if (!isOpen || !task) return null; 
 
+  console.log("check", task)
+  
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuthStore();
 
@@ -151,54 +154,38 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({ isOpen, onClose, task }) => {
                 </div>
               </section>
 
-              {/* Video and Feedback Form Links */}
               {(task.link1 || task.link2) && (
-                <div className="border-t pt-4 px-6 mt-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {task.link1 && (
-                      <div>
-                        <h4 className="text-gray-600 mb-2">Video Link</h4>
-                        <a
-                          href={task.link1}
-                          className="text-blue-600 hover:underline break-all"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {task.link1}
-                        </a>
-                      </div>
-                    )}
-                    {task.link2 && (
-                      <div>
-                        <h4 className="text-gray-600 mb-2">Feedback Form Link</h4>
-                        <a
-                          href={task.link2}
-                          className="text-blue-600 hover:underline break-all"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {task.link2}
-                        </a>
-                      </div>
-                    )}
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {task.link1 && (
+                    <div>
+                      <h4 className="text-gray-600 mb-2">Video Link</h4>
+                      <a
+                        href={task.link1}
+                        className="text-blue-600 hover:underline break-all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {task.link1}
+                      </a>
+                    </div>
+                  )}
+                  {task.link2 && (
+                    <div>
+                      <h4 className="text-gray-600 mb-2">Feedback Form Link</h4>
+                      <a
+                        href={task.link2}
+                        className="text-blue-600 hover:underline break-all"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {task.link2}
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
-
-          {/* Footer */}
-          {!user?.isTaskCreator && (
-            <div className="border-t p-4 flex justify-between">
-              <button 
-                onClick={applyForTask}
-                disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-md font-medium transition-colors duration-200"
-              >
-                {isLoading ? "Applying..." : "Apply for Task"}
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </>

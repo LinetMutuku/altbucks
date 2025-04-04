@@ -1,15 +1,37 @@
-'use client';
-
 import { useEffect } from 'react';
 import ApexCharts from 'apexcharts';
 
-const BarChart = () => {
+interface WorkerEngagement {
+  date: string; 
+  count: number;
+}
+
+interface BarChartProps {
+  workerEngagements: WorkerEngagement[];
+}
+
+const BarChart: React.FC<BarChartProps> = ({ workerEngagements }) => {
   useEffect(() => {
+    const monthsMap = new Map<string, number>();
+
+    workerEngagements.forEach(({ date, count }) => {
+      const [year, month] = date.split('-');
+      const monthIndex = parseInt(month, 10) - 1;
+
+      const monthName = new Date(0, monthIndex).toLocaleString('en-US', { month: 'short' }); 
+      const key = `${monthName} ${year}`; 
+
+      monthsMap.set(key, (monthsMap.get(key) || 0) + count);
+    });
+
+    const categories = Array.from(monthsMap.keys());
+    const dataValues = Array.from(monthsMap.values());
+
     const chartConfig = {
       series: [
         {
-          name: 'Earnings',
-          data: [50, 40, 300, 320, 100, 350, 200, 230, 60, 30, 39, 40],
+          name: 'Worker Engagement',
+          data: dataValues,
         },
       ],
       chart: {
@@ -26,14 +48,15 @@ const BarChart = () => {
         },
       },
       xaxis: {
-        categories: ['Jan', 'Feb', 'Mar','Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        type: 'category',
+        categories,
         labels: {
           style: { colors: '#616161', fontSize: '12px', fontWeight: 400 },
         },
       },
       yaxis: {
         labels: {
-          formatter: (value: number) => `$${value}`,
+          formatter: (value: number) => `${value} Workers`,
           style: { colors: '#616161', fontSize: '12px', fontWeight: 400 },
         },
       },
@@ -47,7 +70,7 @@ const BarChart = () => {
       tooltip: {
         theme: 'dark',
         y: {
-          formatter: (value: number) => `$${value}`,
+          formatter: (value: number) => `${value} Workers`,
         },
       },
     };
@@ -56,12 +79,10 @@ const BarChart = () => {
     chart.render();
 
     return () => chart.destroy();
-  }, []);
+  }, [workerEngagements]);
 
   return (
-    <div className="relative flex flex-col rounded-xl bg-white text-gray-700 ">
-      <div className="relative mx-4  flex flex-col gap-4 md:flex-row md:items-center">
-      </div>
+    <div className="relative flex flex-col rounded-xl bg-white text-gray-700">
       <div className="p-2">
         <div id="bar-chart"></div>
       </div>

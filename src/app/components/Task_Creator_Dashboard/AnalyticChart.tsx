@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   LineChart,
   Line,
@@ -10,81 +10,134 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-const data = [
-{ name: "Jan", uv: 4500, pv: 4900 },
-  { name: "Feb", uv: 4000, pv: 2400 },
-  { name: "Mar", uv: 3000, pv: 1398 },
-  { name: "Apr", uv: 2000, pv: 9800 },
-  { name: "May", uv: 2780, pv: 3908 },
-  { name: "Jun", uv: 4500, pv: 5000 },
-  { name: "Jul", uv: 3490, pv: 4300 },
-  { name: "Aug", uv: 4000, pv: 4700 },
-  { name: "Sep", uv: 3000, pv: 3500 },
-  { name: "Oct", uv: 2000, pv: 4200 },
-  { name: "Nov", uv: 3900, pv: 4800 },
-  { name: "Dec", uv: 5000, pv: 5200 },
-];
+import { format, parseISO } from "date-fns";
+import useCompletedTasksOverTime from "@/hooks/useCompletedTaskOverTime";
 
 const AnalyticChart = () => {
+  const [timeRange, setTimeRange] = useState<string>("all");
+  const { data, loading, error } = useCompletedTasksOverTime(timeRange);
+
+  // Format data based on time range
+  const formattedData = data.map((item, index) => {
+    const date = parseISO(item.date);
+    
+    switch(timeRange) {
+      case "today":
+        return {
+          ...item,
+          formattedDate: format(date, 'HH:00'), // Hour format (00:00 - 23:00)
+          tooltipDate: format(date, 'h a') // 12-hour format with AM/PM (1 PM)
+        };
+      case "7d":
+        return {
+          ...item,
+          formattedDate: format(date, 'EEE'), // Short day name (Mon, Tue)
+          tooltipDate: format(date, 'EEEE') // Full day name (Monday)
+        };
+      case "30d":
+        return {
+          ...item,
+          formattedDate: format(date, 'd'), // Day of month (1-30)
+          tooltipDate: format(date, 'MMM d') // Month + day (Jan 1)
+        };
+      default: // "all"
+        return {
+          ...item,
+          formattedDate: format(date, 'MMM yyyy'), // Month + year (Jan 2023)
+          tooltipDate: format(date, 'MMMM yyyy') // Full month + year (January 2023)
+        };
+    }
+  });
+
+  // Custom X-axis tick formatter
+  const xAxisTickFormatter = (value: string) => {
+    if (timeRange === "30d") return `${value}`; // Just show day number
+    return value; // For other ranges, use the formatted value
+  };
+
   return (
     <div className="bg-white rounded-lg p-6 flex flex-col gap-6 w-full">
       {/* Header Section */}
       <div className="flex flex-col gap-8 border border-gray-200 px-8 py-8 rounded-lg">
         <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold ">Task completed over time</h2>
-            <div className="flex gap-4">
-                <button className="px-4 py-2 text-xs font-medium bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200">
-                    All time
-                </button>
-                <button className="px-4 py-2 text-xs font-medium bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200">
-                    30 Days
-                </button>
-                <button className="px-4 py-2 text-xs font-medium bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200">
-                    7 Days
-                </button>
-                <button className="px-4 py-2 text-xs font-medium bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200">
-                    Today
-                </button>
-            </div>
+          <h2 className="text-2xl font-bold">Task completed over time</h2>
+          <div className="flex gap-4">
+            {["all", "30d", "7d", "today"].map((range) => (
+              <button 
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-4 py-2 text-xs font-medium rounded-md ${
+                  timeRange === range
+                    ? "bg-blue-600 text-white" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {range === "all" ? "All time" : 
+                 range === "30d" ? "30 Days" : 
+                 range === "7d" ? "7 Days" : "Today"}
+              </button>
+            ))}
+          </div>
         </div>
-      
 
-      {/* Line Chart */}
-      <div className="mt-10 mb-1">
-        <ResponsiveContainer width="100%" height={350}>
-            <LineChart
-            data={data}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-            >
-            <CartesianGrid stroke="bg-white" strokeDasharray="none" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip
-                contentStyle={{
-                borderRadius: "8px",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                }}
-            />
-            <Line
-                type="monotone"
-                dataKey="pv"
-                stroke="#8884d8"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 8 }}
-            />
-            <Line
-                type="monotone"
-                dataKey="uv"
-                stroke="#82ca9d"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 8 }}
-            />
-            </LineChart>
-        </ResponsiveContainer>
-      </div>
+        {/* Loading and Error States */}
+        {loading && (
+          <div className="flex justify-center items-center h-64">
+            <p>Loading data...</p>
+          </div>
+        )}
+        {error && (
+          <div className="flex justify-center items-center h-64 text-red-500">
+            <p>Error: {error}</p>
+          </div>
+        )}
+
+        {/* Line Chart */}
+        {!loading && !error && (
+          <div className="mt-10 mb-1 h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={formattedData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid stroke="#f0f0f0" strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="formattedDate" 
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={xAxisTickFormatter}
+                />
+                <YAxis 
+                  label={{ 
+                    value: 'Tasks Completed', 
+                    angle: -90, 
+                    position: 'insideLeft',
+                    fontSize: 12
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                  }}
+                  formatter={(value) => [`${value} tasks`, "Completed"]}
+                  labelFormatter={(label) => {
+                    const item = formattedData.find(d => d.formattedDate === label);
+                    return item?.tooltipDate || label;
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#8884d8"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 8 }}
+                  name="Completed Tasks"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
     </div>
   );

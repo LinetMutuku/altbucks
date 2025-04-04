@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/authStore';
 import ReferralInvite from '../share_overlay/ShareOverlay';
 import { API_URL } from '@/lib/utils';
 import api from '@/lib/api';
+import useWallet from '@/hooks/useWallet';
+import SelectBankModal from '../paymentMethod/selelctBankModal';
 
 const ReferAndEarn: React.FC = () => {
   const { user} = useAuthStore();
@@ -19,9 +21,15 @@ const ReferAndEarn: React.FC = () => {
   
   const [isCopied, setIsCopied] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+
+  const { walletBalance, loading, error  } = useWallet();
   const [totalReferrals, setTotalReferrals] = useState(0);
   const [pendingRewards, setPendingRewards] = useState(0);
   const [earnedRewards, setEarnedRewards] = useState(0);
+  const moneyAvailable = walletBalance?.balance ?? 0;
+
 
   useEffect(() => {
     setToken(localStorage.getItem("authToken")); 
@@ -64,6 +72,15 @@ const ReferAndEarn: React.FC = () => {
   const formattedFirstName = user?.firstName
   ? user.firstName.charAt(0).toUpperCase() + user.firstName.slice(1).toLowerCase()
   : "";
+
+  const handleOpenModal = (mode: 'add' | 'edit') => {
+    setModalMode(mode);
+    setIsModalOpen(true);
+  };
+
+  const handleSelectBank = () => {
+    console.log("bank selected")
+  }
   
   return (
     <div className="text-white py-6 px-6 flex flex-col space-y-10">
@@ -139,19 +156,26 @@ const ReferAndEarn: React.FC = () => {
       <div className="flex justify-center">
       <div className="flex justify-between w-2/3 mt-6 gap-8">
         <div className="flex flex-col gap-2">
-            <p className='text-black flex gap-1 items-center'>
+            <div className='text-black flex gap-1 items-center'>
                 <div className="p-1 bg-[#D2E1FE]">
                     <PiWalletDuotone className='text-[#2877EA]'/>
                     </div> 
-                    Money Available</p>
-        <div className="text-4xl font-bold text-black">£123,456.00</div>
+                    Money Available</div>
+        <div className="text-4xl font-bold text-black">${moneyAvailable}</div>
         </div>
-        <button className="flex gap-4 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-xl shadow-lg">
+        <button onClick={() => handleOpenModal('add')}  className="flex gap-4 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-lg text-xl shadow-lg">
             <div className="border border-white px-1 rounded-sm"><img src="/assets/withdraw-icon.png" alt="" className='w-6 h-6'/></div>
           Withdraw
         </button>
       </div>
       </div>
+
+         <SelectBankModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSelect={handleSelectBank}
+            mode={modalMode}
+          />
     </div>
   );
 };
@@ -199,7 +223,7 @@ export const RecentTasks: React.FC = () => {
     ];
   
     return (
-      <div className="max-w-4xl bg-white rounded-lg shadow p-6">
+      <div className="max-w-4xl bg-white rounded-lg shadow p-16">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-lg font-semibold">Recent Tasks Activities</h2>

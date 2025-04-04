@@ -11,6 +11,7 @@ interface TaskDetails {
   location: string;
   requirements: string;
   deadline: string;
+  postedAt: string;
   compensation: Compensation;
   visibility: string;
   link1?: string;
@@ -25,6 +26,8 @@ export interface TaskApplication {
   taskId: TaskDetails;
   earnerId: string;
   earnerStatus: string;
+  email: string;
+  publicId: string;
   reviewStatus: string;
   reviewedAt: string | null;
   submittedAt: string | null;

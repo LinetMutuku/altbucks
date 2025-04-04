@@ -86,7 +86,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
             }
 
             const response = await fetch(
-                `${API_URL}/tasks/update/${taskId}`,
+                `${API_URL}/api/v1/tasks/update/${taskId}`,
                 {
                     method: "PUT",
                     body: formData,

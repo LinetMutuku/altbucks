@@ -1,3 +1,4 @@
+
 "use client";
 
 import { API_URL } from "@/lib/utils";
@@ -26,7 +27,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState("");
-    const [currency, setCurrency] = useState("USD"); // Store the selected currency as a string
+    const [currency, setCurrency] = useState<string>("USD");
     const [noOfRespondents, setNoOfRespondents] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -45,24 +46,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
             setLink1(task.link1 || "");
             setLink2(task.link2 || "");
             setAmount(task.compensation?.amount || "");
-
-            // Handle currency - if it's an object with USD/EUR properties, use the active one
-            if (task.compensation?.currency) {
-                if (typeof task.compensation.currency === 'object') {
-                    // If it's an object with boolean flags, find the active currency
-                    if (task.compensation.currency.USD) {
-                        setCurrency("USD");
-                    } else if (task.compensation.currency.EUR) {
-                        setCurrency("EUR");
-                    } else {
-                        setCurrency("USD"); // Default
-                    }
-                } else {
-                    // If it's already a string
-                    setCurrency(task.compensation.currency);
-                }
-            }
-
+            setCurrency(task.compensation?.currency || "USD");
             setNoOfRespondents(task.noOfRespondents || "");
         }
     }, [task]);
@@ -96,7 +80,7 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
             formData.append("link1", link1);
             formData.append("link2", link2);
             formData.append("amount", amount);
-            formData.append("currency", currency);
+            formData.append("currency", JSON.stringify(currency));
             formData.append("noOfRespondents", noOfRespondents);
             if (files) {
                 formData.append("files", files);

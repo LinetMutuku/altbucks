@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react'
@@ -6,34 +7,22 @@ import Image from 'next/image'
 import IllustrationImg from "../../../public/assets/Illustration.png";
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff } from 'lucide-react';
 
-
-function SearchParamsComponent({ onReferralCodeFound }: { onReferralCodeFound: (code: string | null) => void }) {
+function SignUpPageContent() {
+    //Get referralCode(if any)
     const searchParams = useSearchParams();
-    const referralCode = searchParams.get("ref");
+    const referralCode = searchParams?.get("ref");
 
-    useEffect(() => {
-        onReferralCodeFound(referralCode);
-    }, [referralCode, onReferralCodeFound]);
-
-    return null;
-}
-
-// Import useSearchParams here to avoid bundling it during server rendering
-import { useSearchParams } from 'next/navigation';
-
-export default function Page() {
-    const [referralCode, setReferralCode] = useState<string | null>(null);
     const [userData, setUserData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         phoneNumber: "",
         password: "",
-        referralCode: null,
+        referralCode: referralCode || null,
         confirmPassword: ""
     });
     const [loading, setLoading] = useState(false);
@@ -47,14 +36,6 @@ export default function Page() {
 
     const router = useRouter();
     const { signup } = useAuthStore();
-
-    // Update userData when referralCode changes
-    useEffect(() => {
-        setUserData(prev => ({
-            ...prev,
-            referralCode
-        }));
-    }, [referralCode]);
 
     // Validate email when it changes
     useEffect(() => {
@@ -122,11 +103,6 @@ export default function Page() {
     return (
         <div className='bg-[#2877EA] min-h-screen w-full'>
             <Header />
-            {/* Suspense for search params component */}
-            <Suspense fallback={null}>
-                <SearchParamsComponent onReferralCodeFound={setReferralCode} />
-            </Suspense>
-
             <div className='flex flex-col lg:flex-row justify-center lg:justify-around w-full px-4 lg:w-[90%] mx-auto mt-8 lg:mt-12 pb-12 lg:pb-24 gap-8 lg:gap-0'>
                 {/* Left section - Illustration */}
                 <div className='text-white flex flex-col gap-6 lg:gap-8 w-full lg:w-[30%]'>
@@ -135,7 +111,7 @@ export default function Page() {
                     <Image src={IllustrationImg} className='w-full max-w-md mx-auto lg:mx-0' alt='Illustration'/>
                 </div>
 
-
+                {/* Authentication Section */}
                 <div className='bg-white w-full lg:w-[50%] rounded-3xl px-6 sm:px-8 lg:px-16 py-8 lg:py-16 flex flex-col gap-4'>
                     <h4 className='text-black tracking-wide text-xl lg:text-2xl font-semibold'>Sign up now</h4>
                     <form className='flex w-full flex-col gap-4' onSubmit={handleSubmit}>
@@ -260,7 +236,7 @@ export default function Page() {
                         <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mt-2'>
                             <button
                                 type="submit"
-                                disabled={loading || emailError || passwordError}
+                                disabled={Boolean(loading || emailError || passwordError)}
                                 className='w-full sm:w-auto px-6 py-3 rounded-xl hover:bg-blue-800 transition-all duration-500 text-base bg-blue-600 text-white disabled:opacity-70 disabled:cursor-not-allowed'
                             >
                                 {loading ? (
@@ -282,4 +258,12 @@ export default function Page() {
             </div>
         </div>
     )
+}
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SignUpPageContent />
+        </Suspense>
+    );
 }

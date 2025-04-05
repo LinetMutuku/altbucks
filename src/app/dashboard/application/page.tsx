@@ -6,11 +6,59 @@ import Header from "@/app/components/Tasks_Components/Header";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdFilterList } from "react-icons/md";
 import api from "@/lib/api";
-import { TaskApplication } from "@/interface/TaskApplication";
+
+interface Compensation {
+  currency: string;
+  amount: number;
+}
+
+
+interface TaskDetails {
+  _id: string;
+  title: string;
+  description: string;
+  taskType: string;
+  location: string;
+  requirements: string;
+  deadline: string;
+  postedAt: string;
+  compensation: Compensation;
+  visibility: string;
+  link1?: string;
+  link2?: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+
+type TaskCardProps = {
+  _id: string;
+  taskId: TaskDetails;
+  earnerId: string;
+  earnerStatus: string;
+  email: string;
+  publicId: string;
+  reviewStatus: string;
+  reviewedAt: string | null;
+  submittedAt: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  company: string;
+  title: string;
+  type: string;
+  earnings: string;
+  appliedOn: string;
+  deadline: string;
+  status: "Completed" | "Pending" | "In Progress";
+  description: string;
+};
 
 const ApplicationsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [responseData, setResponseData] = useState<TaskApplication[] | null>(null);
+  const [responseData, setResponseData] = useState<TaskCardProps[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -36,7 +84,7 @@ const ApplicationsPage: React.FC = () => {
     fetchData();
   };
 
-  console.log("responseData", responseData);
+  console.log("responseData",responseData)
 
   return (
       <>
@@ -90,8 +138,8 @@ const ApplicationsPage: React.FC = () => {
 
           {/* Task Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 py-4">
-            {responseData?.map((taskApplication, index) => (
-                <TaskCard key={index} taskApplication={taskApplication} />
+            {responseData?.map((task, index) => (
+                <TaskCard key={index} taskApplication={task} />
             ))}
           </div>
           {/* Error Message */}
@@ -102,3 +150,6 @@ const ApplicationsPage: React.FC = () => {
 };
 
 export default ApplicationsPage;
+
+
+// const data = await Data.findOne({email}, id)

@@ -49,7 +49,7 @@ export default function Page() {
         }
     }, [userData.password, userData.confirmPassword]);
 
-    const validateEmail = (email) => {
+    const validateEmail = (email: string) => {
         const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(String(email).toLowerCase());
     };
@@ -223,7 +223,7 @@ export default function Page() {
                         <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mt-2'>
                             <button
                                 type="submit"
-                                disabled={loading || emailError || passwordError}
+                                disabled={Boolean(loading || emailError || passwordError)}
                                 className='w-full sm:w-auto px-6 py-3 rounded-xl hover:bg-blue-800 transition-all duration-500 text-base bg-blue-600 text-white disabled:opacity-70 disabled:cursor-not-allowed'
                             >
                                 {loading ? (

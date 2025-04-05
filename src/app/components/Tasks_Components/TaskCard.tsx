@@ -6,6 +6,7 @@ interface TaskCardProps {
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
+
     const taskId = taskApplication?.taskId;
     const earnerStatus = taskApplication?.earnerStatus || "Pending";
 
@@ -26,11 +27,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
         })
         : "No Deadline";
 
-    // Status styling with proper TypeScript type
-    const statusStyles: Record<string, string> = {
-        "Pending": "text-yellow-500",
+    // Status styling
+    const statusStyles = {
+        Pending: "text-yellow-500",
         "In Progress": "text-blue-500",
-        "Completed": "text-green-500",
+        Completed: "text-green-500",
     };
 
     return (
@@ -40,7 +41,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
                 <h3 className="text-sm text-[#4C2909]">{taskType}</h3>
                 <span
                     className={`text-sm font-semibold ${
-                        statusStyles[earnerStatus] || "text-gray-500"
+                        statusStyles[earnerStatus as keyof typeof statusStyles] || "text-gray-500"
                     }`}
                 >
           ● {earnerStatus}
@@ -59,7 +60,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
                 <p className="flex flex-col text-[#1E1E1E]">
                     <span className="font-medium opacity-50">Earnings:</span>
                     <span className="font-semibold">
-            {/* {compensation?.currency} {compensation?.amount} */}
+            {/* {compensation.currency} {compensation.amount} */}
           </span>
                 </p>
                 <p className="flex flex-col text-red-600 font-medium text-sm">

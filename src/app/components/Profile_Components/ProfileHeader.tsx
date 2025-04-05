@@ -22,7 +22,7 @@ interface User {
 }
 
 interface ProfileHeaderProps {
-  user: User; // user passed as prop
+  user: User | null; // user passed as prop
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {

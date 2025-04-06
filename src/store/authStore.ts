@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import axios from "axios";
 import { API_URL } from "@/lib/utils";
-import { auth } from "@/firebase/config";
+// import { auth } from "@/firebase/config";
 
 interface User {
   _id: string;
@@ -290,24 +290,25 @@ export const useAuthStore = create<AuthState>()(
       
 
       logout: async () => {
-        try {
-          await auth.signOut();
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("firebaseToken");
-          document.cookie =
-            "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        console.log("logged out")
+        // try {
+        //   await auth.signOut();
+        //   localStorage.removeItem("authToken");
+        //   localStorage.removeItem("firebaseToken");
+        //   document.cookie =
+        //     "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
-          set({
-            user: null,
-            isAuthenticated: false,
-            error: null,
-            isLoading: false,
-          });
-        } catch (error: any) {
-          console.error("Logout error:", error);
-          set({ error: "Logout failed" });
-          throw error;
-        }
+        //   set({
+        //     user: null,
+        //     isAuthenticated: false,
+        //     error: null,
+        //     isLoading: false,
+        //   });
+        // } catch (error: any) {
+        //   console.error("Logout error:", error);
+        //   set({ error: "Logout failed" });
+        //   throw error;
+        // }
       },
     }),
     {

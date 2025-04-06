@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/app/components/Tasks_Components/Card";
-import Header from "@/app/components/Tasks_Components/Header-earner";
+import Header from "../../components/Dashboard_Components/Header";
 import CreateTaskForm from "@/app/components/Tasks_Components/CreateTaskForm";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -107,7 +107,7 @@ const Task: React.FC = () => {
   const updateTaskStatus = async (
     applicationId: string,
     taskId: string,
-    status: "Approved" | "Rejected" | "Pending"
+    status: "Completed" | "Rejected" | "Pending"
   ) => {
     setActiveMenu(null);
     try {
@@ -262,7 +262,7 @@ const Task: React.FC = () => {
                               </button>
                               <button
                                 className="flex items-center gap-2 text-green-600 w-full px-3 py-2 hover:bg-green-50 rounded-md"
-                                onClick={() => updateTaskStatus(_id, taskId._id, "Approved")}
+                                onClick={() => updateTaskStatus(_id, taskId._id, "Completed")}
                               >
                                 <MdDoneAll className="text-lg" /> Mark Task as Complete
                               </button>

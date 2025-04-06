@@ -173,7 +173,7 @@ const LineChartComponent = () => {
   // If no data exists, show a message but keep the toggle
   return (
     <div className="bg-white rounded-lg p-6 flex flex-col gap-6 w-full">
-      <h2 className="text-2xl font-bold">Spending Over Time</h2>
+      <h2 className="text-2xl font-bold">Earning Over Time</h2>
       <div className="flex flex-col gap-8 border border-gray-200 px-8 py-8 rounded-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-base font-bold text-black">Task Earning Report</h2>

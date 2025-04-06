@@ -39,7 +39,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
     }
     try {
       const response = await api.patch(
-        `${API_URL}/api/v1/tasks/${task.taskId._id}/applications/${task._id}/status`,
+        `${API_URL}/api/v1/tasks/${task.taskId._id}/applications/${task._id}/review`,
         { reviewStatus: status }
       );
       if (response.status === 200) {

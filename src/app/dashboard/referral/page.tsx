@@ -1,6 +1,6 @@
 "use client"
 import React from 'react'
-import Header from '@/app/components/Referral_Components/Header'
+import Header from '../../components/Dashboard_Components/Header'
 import ReferAndEarn, { RecentTasks } from "@/app/components/Referral_Components/ReferAndEarn";
 import SearchByDate from '@/app/components/Referral_Components/SearchByDate';
 import ReferralCards, { CardSection } from '@/app/components/Referral_Components/ReferralCards';

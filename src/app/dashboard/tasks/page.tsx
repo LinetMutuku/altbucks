@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/app/components/Tasks_Components/Card";
-import { CardsData } from "@/app/components/Tasks_Components/CardsData";
+// import { CardsData } from "@/app/components/Tasks_Components/CardsData";
 import Filter from "@/app/components/Tasks_Components/Filter";
 import { IoClose, IoSearchOutline } from "react-icons/io5";
 import { MdFilterList } from "react-icons/md";
-import Header from "@/app/components/Tasks_Components/Header";
+import Header from "../../components/Dashboard_Components/Header";
 import useTasks from "@/hooks/useTask";
 import useScrollToTop from "@/hooks/useScrollToTop";
 import Pagination from "@/app/components/Pagination/Pagination";
 import { FaSpinner } from "react-icons/fa";
 import api from "@/lib/api";
-import { title } from "process";
+// import { title } from "process";
 
 const Tasks: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -105,7 +105,7 @@ const Tasks: React.FC = () => {
 
   return (
     <>
-    <Header />
+      <Header />
       <div className="bg-white p-3 md:p-8 font-Satoshi">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between">

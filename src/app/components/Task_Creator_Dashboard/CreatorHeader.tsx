@@ -100,7 +100,7 @@ export default function CreatorHeader() {
                         }
                     </div>
                     <div className='text-blue-300'>|</div>
-                    <Image src={profileImage} onClick={() => router.push("/dashboard_taskcreator") } 
+                    <Image src={profileImage} onClick={() => router.push("/profile") } 
                         alt="" className='h-[50px] w-auto object-cover cursor-pointer rounded-full' 
                         />
                 </div>

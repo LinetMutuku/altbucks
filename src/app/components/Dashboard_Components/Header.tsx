@@ -33,13 +33,24 @@ export default function Header() {
                 </Link>
             </div>
 
-            <div className='flex gap-6 items-center'>
-                <IoIosNotificationsOutline color='black' size={20} className='cursor-pointer'/>
-                <p className='text-gray-400'>|</p>
-                <Image src={avatarImg} alt='' className='cursor-pointer'/>
+            <div className="flex gap-6 items-center">
+            <IoIosNotificationsOutline
+                color="black"
+                size={28} // <-- Increase size here
+                className="cursor-pointer"
+            />
+            <p className="text-gray-400">|</p>
+            <Link href="/profile">
+                <Image
+                src={avatarImg}
+                alt="Profile"
+                width={36}
+                height={36}
+                className="rounded-full object-cover cursor-pointer"
+                />
+            </Link>
             </div>
         </div>
-        
     </nav>
   )
 }

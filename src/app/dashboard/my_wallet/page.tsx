@@ -1,9 +1,9 @@
 "use client";
 
 import CardSlider from "@/app/components/My_Wallet_Component/CardSlider";
-import Header from '../../components/My_Wallet_Component/Header';
+import Header from '../../components/Dashboard_Components/Header';
 import bg from "../../../../public/assets/my_wallet/cardContainer.png"
-import Icon from "../../../../public/assets/Icon.png";
+// import Icon from "../../../../public/assets/Icon.png";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
@@ -21,7 +21,7 @@ const Wallet: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add'); 
-  const { walletBalance, walletDetails, loading, error  } = useWallet();
+  const { walletBalance, walletDetails  } = useWallet();
 
   const moneyAvailable = walletBalance?.balance ?? 0;
   const totalMoneyReceived = walletDetails?.totalMoneyReceived ?? 0;

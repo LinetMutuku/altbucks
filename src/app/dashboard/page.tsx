@@ -57,6 +57,7 @@ export default function Dashboard() {
   const handleButtonClick = () => {
     router.push("/dashboard/task");
   };
+  
 
   if (!isAuthenticated || loading) return <div>Loading...</div>;
 

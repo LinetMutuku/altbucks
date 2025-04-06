@@ -9,6 +9,7 @@ import { TaskApplication } from "@/interface/TaskApplication";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import TaskDetails from "../Tasks_Components/FeaturedTask";
+import { toast } from "react-toastify";
 
 export default function FeaturedTask() {
   const {user} = useAuthStore();
@@ -18,7 +19,9 @@ export default function FeaturedTask() {
   const [selectedTask, setSelectedTask] = useState<TaskApplication | null>(null);
   const [showMiniModalId, setShowMiniModalId] = useState<string | null>(null);
   const [showTaskDetails, setShowTaskDetails] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const router = useRouter();
+  console.log(activeMenu)
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -55,7 +58,7 @@ export default function FeaturedTask() {
       case "pending":
         return { bg: "bg-[#FEF9C3]", text: "text-[#FACC15]" };
       case "completed":
-        return { bg: "bg-gray-200", text: "text-gray-500" };
+        return { bg: "bg-green-200", text: "text-green-500" };
       default:
         return { bg: "bg-gray-200", text: "text-gray-500" };
     }
@@ -73,6 +76,34 @@ export default function FeaturedTask() {
     setSelectedTask(task);
     setShowTaskDetails(true);
     setShowMiniModalId(null);
+  };
+
+  const updateTaskStatus = async (
+    applicationId: string,
+    taskId: string,
+    status: "Completed" | "Cancelled" | "Pending"
+  ) => {
+    setActiveMenu(null);
+    try {
+      const response = await api.patch(
+        `${API_URL}/api/v1/tasks/${taskId}/applications/${applicationId}/status`,
+        { earnerStatus: status }
+      );
+      if (response.status === 200) {
+        toast.success(`Task status updated to ${status}`);
+        setTasks(prev =>
+          prev.map(task =>
+            task._id === applicationId
+              ? { ...task, earnerStatus: status }
+              : task
+          )
+        );
+        setShowMiniModalId(null);
+      }      
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      toast.error("Failed to update task status");
+    }
   };
 
   return (
@@ -156,15 +187,56 @@ export default function FeaturedTask() {
                     </button>
         
                     {isOpen && (
-                      <div className="absolute whitespace-nowrap right-0 top-8 bg-white border shadow-lg rounded-md z-10 p-2">
-                        <button
-                          onClick={() => handleViewClick(task)}
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          View Task
-                        </button>
+                      <div className="absolute whitespace-nowrap right-0 bottom-10 bg-white border shadow-lg rounded-xl z-50 p-4 w-56">
+                        <div className="flex flex-col gap-4">
+                          <button
+                            onClick={() => updateTaskStatus(task._id, task.taskId._id, "Cancelled")}
+                             className="flex items-center gap-2 text-sm text-red-500 hover:opacity-80">
+                            <div className="bg-red-100 p-2 rounded-full">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a1 1 0 00-1 1v1h6V4a1 1 0 00-1-1m-4 0h4" />
+                              </svg>
+                            </div>
+                            Delete Task
+                          </button>
+
+                          <button
+                            onClick={() => handleViewClick(task)}
+                            className="flex items-center gap-2 text-sm text-blue-600 hover:opacity-80"
+                          >
+                            <div className="bg-blue-100 p-2 rounded-full">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 01-6 0m6 0a3 3 0 00-6 0m6 0H9" />
+                              </svg>
+                            </div>
+                            View Task
+                          </button>
+
+                          <button 
+                            onClick={() => updateTaskStatus(task._id, task.taskId._id, "Completed")}
+                            className="flex items-center gap-2 text-sm text-green-600 hover:opacity-80">
+                            <div className="bg-green-100 p-2 rounded-full">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            Mark Task as Complete
+                          </button>
+
+                          <button
+                          onClick={() => updateTaskStatus(task._id, task.taskId._id, "Pending")}
+                          className="flex items-center gap-2 text-sm text-yellow-600 hover:opacity-80">
+                            <div className="bg-yellow-100 p-2 rounded-full">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m0-4h.01M12 20h.01" />
+                              </svg>
+                            </div>
+                            Mark Task as Pending
+                          </button>
+                        </div>
                       </div>
                     )}
+
                   </td>
                 </tr>
               );

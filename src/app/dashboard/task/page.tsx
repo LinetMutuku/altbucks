@@ -82,12 +82,27 @@ const Task: React.FC = () => {
 
   const fetchTasksQuery = async () => {
     try {
-      const response = await api.post(`${API_URL}/api/v1/tasks/applications/earner`, {
-        search: searchQuery,
-        status: filterStatus,
+      // Create the payload object
+      const payload: Record<string, any> = {
         page: tablepage,
-        limit: pageSize,
-      });
+        limit: pageSize
+      };
+  
+      // Only add search if it has a value
+      if (searchQuery && searchQuery.trim() !== '') {
+        payload.search = searchQuery.trim();
+      }
+  
+      // Only add status if it has a value
+      if (filterStatus && filterStatus.trim() !== '') {
+        payload.status = filterStatus.trim();
+      }
+  
+      const response = await api.post(
+        `${API_URL}/api/v1/tasks/applications/earner`,
+        payload
+      );
+      
       const data = response.data.data;
       setTasksApplications(data || []);
       setApplicationtotalPages(data?.pagination?.totalPages || 1);
@@ -107,7 +122,7 @@ const Task: React.FC = () => {
   const updateTaskStatus = async (
     applicationId: string,
     taskId: string,
-    status: "Completed" | "Rejected" | "Pending"
+    status: "Completed" | "Cancelled" | "Pending"
   ) => {
     setActiveMenu(null);
     try {
@@ -274,7 +289,7 @@ const Task: React.FC = () => {
                               </button>
                               <button
                                 className="flex items-center gap-2 text-red-500 w-full px-3 py-2 hover:bg-red-50 rounded-md"
-                                onClick={() => updateTaskStatus(_id, taskId._id, "Rejected")}
+                                onClick={() => updateTaskStatus(_id, taskId._id, "Cancelled")}
                               >
                                 <FaTrashAlt className="text-lg" /> Reject Task
                               </button>

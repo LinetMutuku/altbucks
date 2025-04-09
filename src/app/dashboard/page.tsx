@@ -12,6 +12,7 @@ import Header from "../components/Dashboard_Components/Header";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { FaSpinner } from "react-icons/fa";
 
 interface OverviewData {
   cancelledTasks: number;
@@ -59,7 +60,11 @@ export default function Dashboard() {
   };
   
 
-  if (!isAuthenticated || loading) return <div>Loading...</div>;
+  if (!isAuthenticated || loading) return (
+    <div className="flex justify-center items-center h-full">
+      <FaSpinner className="animate-spin text-blue-500 text-2xl" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-white font-mulish overflow-x-hidden">

@@ -2,104 +2,110 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/app/components/Tasks_Components/Card";
-// import { CardsData } from "@/app/components/Tasks_Components/CardsData";
 import Filter from "@/app/components/Tasks_Components/Filter";
 import { IoClose, IoSearchOutline } from "react-icons/io5";
 import { MdFilterList } from "react-icons/md";
 import Header from "../../components/Dashboard_Components/Header";
-import useTasks from "@/hooks/useTask";
 import useScrollToTop from "@/hooks/useScrollToTop";
 import Pagination from "@/app/components/Pagination/Pagination";
 import { FaSpinner } from "react-icons/fa";
 import api from "@/lib/api";
-// import { title } from "process";
+import { Filters } from "@/interface/Filter";
+
+interface Pagination {
+  page: number;
+  total: number;
+  limit: number
+  totalPages: number;
+}
+
+interface TaskResponse {
+  data: any[];
+  pagination: Pagination;
+}
 
 const Tasks: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState<any[]>([]);
-  const [filters, setFilters] = useState<{ [key: string]: string[] }>({});
+  const [filters, setFilters] = useState<Filters>({});
   const [page, setPage] = useState(1);
-  const pageSize = 20;
-
-  const { tasks, isLoading, error, totalPages } = useTasks(page, pageSize);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
 
   useScrollToTop(page);
 
-  // Function to get ISO date range
-  const getISODateRange = (dateRanges: string[]) => {
-    const now = new Date();
-    let minDate = now; // Start with current date
-
-    dateRanges.forEach((range) => {
-      let calculatedDate = new Date(now); // Copy current date
-
-      switch (range) {
-        case "past_24_hours":
-          calculatedDate.setHours(now.getHours() - 24);
-          break;
-        case "past_week":
-          calculatedDate.setDate(now.getDate() - 7);
-          break;
-        case "past_month":
-          calculatedDate.setDate(now.getDate() - 30);
-          break;
-        case "anytime":
-        default:
-          return; // Don't modify for "anytime"
-      }
-
-      // Keep the oldest date (earliest timestamp)
-      if (calculatedDate < minDate) {
-        minDate = calculatedDate;
-      }
-    });
-
-    return minDate.toISOString();
-  };
-
   const handleSearchAndFilter = async () => {
-    console.log("Current Filters:", filters);
 
-    const datePosted = getISODateRange(filters["Date posted"] || []); // Ensure it's an array
+    const applicationRange = filters["Number of Applications"];
+    const isApplicationRangeObject =
+      applicationRange &&
+      typeof applicationRange === "object" &&
+      !Array.isArray(applicationRange) &&
+      "minApplications" in applicationRange &&
+      "maxApplications" in applicationRange;
 
-    console.log("Converted ISO Date:", datePosted);
-
+     const taskPay = filters["Task Pay"];
+     const isTaskPayObject = taskPay && typeof taskPay === "object" && "minPay" in taskPay && "maxPay" in taskPay;
+      
+    
     const payload: Record<string, any> = {
-      search: searchQuery,
-      taskType: filters["Skill"]?.[0] || "",
-      maxApplications: filters["Number of Applications"]?.[0] || "",
-      minApplications: filters["Number of Applications"]?.[1] || "",
-      maxPay: filters["Task Pay"]?.[0] || "",
-      minPay: filters["Task Pay"]?.[1] || "",
-      datePosted, // Now correctly formatted
-      page: 1, // Ensure we reset page to 1 for new searches
+      search: searchQuery?.trim() || undefined,
+      taskType: filters["Skill"]?.[0] || undefined,
+      maxApplications: isApplicationRangeObject ? applicationRange.maxApplications : undefined,
+      minApplications: isApplicationRangeObject ? applicationRange.minApplications : undefined,
+      maxPay: isTaskPayObject ? taskPay.maxPay : undefined,
+      minPay: isTaskPayObject ? taskPay.minPay : undefined,
+      datePosted: filters["Date posted"]?.[0] || undefined,
+      page,
       limit: 20,
     };
 
-    Object.keys(payload).forEach((key) => {
-      if (
-        payload[key] === undefined ||
-        payload[key] === "" ||
-        (Array.isArray(payload[key]) && payload[key].length === 0)
-      ) {
-        delete payload[key];
-      }
-    });
-
-    console.log("Final Payload Sent to Backend:", payload);
+    const cleanPayload = Object.fromEntries(
+      Object.entries(payload).filter(
+        ([_, value]) => value !== undefined && value !== "" && value !== null
+      )
+    );
 
     try {
-      const response = await api.post("/api/v1/tasks/search", payload);
-      setSearchResult(response.data.data); // Update the search result state
-    } catch (error) {
+      setIsLoading(true)
+      setError(null);
+      const response = await api.post<TaskResponse>("/api/v1/tasks/search", cleanPayload);
+      setSearchResult(response.data.data);
+      const pagination = response.data.pagination.totalPages; 
+      setTotalPages(pagination)
+    } catch (error: any) {
       console.error("Error fetching tasks:", error);
+      setError(
+        error?.response?.data?.message ||
+        "Something went wrong while fetching tasks. Please try again later."
+      );
+    }finally{
+      setIsLoading(false);
     }
   };
 
-  // Use useEffect to re-fetch tasks whenever filters or searchQuery change
   useEffect(() => {
-    handleSearchAndFilter(); // Fetch new data whenever searchQuery or filters change
+    setSearchResult([]); 
+    handleSearchAndFilter();
+  }, [filters, searchQuery, page]);
+
+  // Reset page to 1 when filters or searchQuery are cleared
+  useEffect(() => {
+    const isSearchEmpty = searchQuery.trim() === "";
+    const areFiltersEmpty = Object.values(filters).every(
+      (val) =>
+        !val ||
+        (Array.isArray(val) && val.length === 0) ||
+        (typeof val === "object" &&
+          Object.values(val).every((v) => v === null || v === ""))
+    );
+
+    if (isSearchEmpty && areFiltersEmpty) {
+      setPage(1);
+    }
   }, [filters, searchQuery]);
 
 
@@ -156,7 +162,7 @@ const Tasks: React.FC = () => {
         <div className="md:hidden w-full flex justify-end p-3">
         <button
           className="flex items-center gap-2 px-3 py-1 border border-gray-300 rounded-md"
-          onClick={() => setIsFilterOpen(true)} // Open filter
+          onClick={() => setIsFilterOpen(true)} 
         >
           <MdFilterList className="text-xl" />{" "}
           <span className="mr-2 font-medium">Filter</span>
@@ -189,33 +195,26 @@ const Tasks: React.FC = () => {
 
         {/* Cards Section */}
         <div className="bg-white w-full">
-          {isLoading ? (
-            // Show Spinner while loading
-            <div className="flex justify-center items-center h-48">
-              <FaSpinner className="animate-spin text-blue-500 text-3xl" />
-            </div>
-          ) : error ? (
-            // Show error message
-            <p className="text-red-500 text-center">{error}</p>
-          ) : (searchResult.length > 0 ? (
-            // Show search results if available
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {searchResult.map((card, index) => (
-                <Card key={index} {...card} />
-              ))}
-            </div>
-          ) : (
-            // Show all tasks if no search results
-            tasks.length === 0 ? (
-              <p className="text-gray-500 text-center">No tasks available.</p>
-            ) : (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-48">
+            <FaSpinner className="animate-spin text-blue-500 text-3xl" />
+          </div>
+            ) : error ? (
+              <div className="text-center text-red-600 font-medium py-6 bg-red-50 rounded-lg border border-red-200">
+                {error}
+              </div>
+            ) : searchResult.length > 0 ? (
+              // Show search results if available
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {tasks.map((card, index) => (
+                {searchResult.map((card, index) => (
                   <Card key={index} {...card} />
                 ))}
               </div>
-            )
-          ))}
+            ) : (
+            <div className="text-center text-gray-500 mt-10">
+            No tasks found. Try adjusting your search or filters.
+          </div>          
+          )}
         </div>
 
         {/* Pagination */}

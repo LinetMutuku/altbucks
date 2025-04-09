@@ -32,7 +32,7 @@ const useTasks = (page: number, pageSize: number) => {
     fetchTasks();
   }, [page, pageSize]);
 
-  return { tasks, isLoading, error, totalPages };
+  return { tasks, isLoading, error, totalPages, setTotalPages, setTasks };
 };
 
 export default useTasks;

@@ -74,7 +74,7 @@ const Card: React.FC = (props: any) => {
             <div className="flex flex-col justify-end">
               <button
                 onClick={() => setModalOpen(true)}
-                className="flex gap-2 justify-center text-blue-500 text-sm hover:underline self-start"
+                className="flex gap-2 justify-center text-blue-500 whitespace-nowrap text-sm hover:underline self-start"
               >
                 View Details <FaAngleRight className="mt-1" />
               </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Header from '../../components/Dashboard_Components/Header';
 import SearchByDate from '@/app/components/Referral_Components/SearchByDate';
@@ -30,7 +30,7 @@ interface Referral {
 }
 
 
-export default function InvitationsPage() {
+function InvitationsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -598,3 +598,10 @@ export default function InvitationsPage() {
   );
 }
 
+export default function InvitationDetailsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InvitationsPage />
+    </Suspense>
+  );
+}

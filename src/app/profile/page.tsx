@@ -12,6 +12,7 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState('profile');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+
     // useEffect(() => {
     //     profileAuth();
     // }, [profileAuth]);

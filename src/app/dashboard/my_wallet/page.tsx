@@ -51,12 +51,12 @@ const Wallet: React.FC = () => {
   }, []);
 
   // Save tab selection to localStorage
-  const handleTabClick = (label: keyof typeof tableData) => {
-    setActiveTab(label);
-    if (isClient) {
-      localStorage.setItem("activeTab", label);
-    }
-  };
+  // const handleTabClick = (label: keyof typeof tableData) => {
+  //   setActiveTab(label);
+  //   if (isClient) {
+  //     localStorage.setItem("activeTab", label);
+  //   }
+  // };
 
   if (!isClient) {
     return null; 

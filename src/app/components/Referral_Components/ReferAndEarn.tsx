@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CiBookmark } from "react-icons/ci";
 import { PiWalletDuotone } from "react-icons/pi";
-import { MdKeyboardArrowRight } from "react-icons/md";
+// import { MdKeyboardArrowRight } from "react-icons/md";
 import { useAuthStore } from '@/store/authStore';
 import ReferralInvite from '../share_overlay/ShareOverlay';
 import { API_URL } from '@/lib/utils';
@@ -17,7 +17,7 @@ const ReferAndEarn: React.FC = () => {
   //Referral Link Generation
   const signUpUrl = "https://alt-bucks.vercel.app/sign-up/"; 
   const referralCode = user?.referralCode || "DEFAULT_CODE";
-  const referralLink = `${signUpUrl}?ref=${referralCode}`;
+  const referralLink = `${signUpUrl}?referralCode=${referralCode}`;
   
   const [isCopied, setIsCopied] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -60,8 +60,9 @@ const ReferAndEarn: React.FC = () => {
         setPendingRewards(data?.data?.pendingRewards || 0);
         setEarnedRewards(data?.data?.earnedRewards || 0);
       } catch (error) {
-        console.error("Error fetching referral stats:", error);
-      }
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch refferals stats";
+        toast.error(message);      }
     };
   
     if (token) {
@@ -136,14 +137,14 @@ const ReferAndEarn: React.FC = () => {
         <div className="p-1 bg-[#D2E1FE]">
         <PiWalletDuotone className='text-[#2877EA]'/>
         </div> 
-        <p className="flex gap-1 items-end text-4xl font-bold text-gray-500"><span className='text-2xl text-gray-500'> £ </span>{pendingRewards}</p>
+        <p className="flex gap-1 items-end text-4xl font-bold text-gray-500"><span className='text-2xl text-gray-500'> $ </span>{pendingRewards}</p>
           <p className="text-sm text-gray-600">Pending Rewards</p>
         </div>
         <div className="bg-white flex gap-2 items-center text-gray-800 rounded-lg px-6 py-4 shadow-md text-center w-64">
         <div className="p-1 bg-[#D2E1FE]">
         <PiWalletDuotone className='text-[#2877EA]'/>
         </div> 
-        <p className="flex gap-1 items-end text-4xl font-bold text-gray-500"><span className='text-2xl text-gray-500'> £ </span>{earnedRewards}</p>
+        <p className="flex gap-1 items-end text-4xl font-bold text-gray-500"><span className='text-2xl text-gray-500'> $ </span>{earnedRewards}</p>
           <p className="text-sm text-gray-600">Earned Rewards</p>
         </div>
       </div>
@@ -184,87 +185,17 @@ const ReferAndEarn: React.FC = () => {
 
 export default ReferAndEarn;
 
+import FeaturedTask from "../../components/task/FeaturedTask";
+import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
+
+
 export const RecentTasks: React.FC = () => {
-    const tasks = [
-      {
-        status: "Completed",
-        statusColor: "bg-green-100 text-green-800",
-        title: "Follow on Facebook",
-        subtitle: "5 minutes",
-        amount: "$10.04",
-        date: "Oct 15, 2024",
-        provider: "Facebook",
-      },
-      {
-        status: "Pending",
-        statusColor: "bg-yellow-100 text-yellow-800",
-        title: "Mastercard ****6442",
-        subtitle: "Card payment",
-        amount: "$99.00",
-        date: "Jan 17, 2022",
-        provider: "Facebook",
-      },
-      {
-        status: "Pending",
-        statusColor: "bg-yellow-100 text-yellow-800",
-        title: "Account ****882",
-        subtitle: "Bank payment",
-        amount: "$249.94",
-        date: "Jan 17, 2022",
-        provider: "Netflix",
-      },
-      {
-        status: "Canceled",
-        statusColor: "bg-red-100 text-red-800",
-        title: "Amex card ****5666",
-        subtitle: "Card payment",
-        amount: "$199.24",
-        date: "Jan 17, 2022",
-        provider: "Amazon Prime",
-      },
-    ];
-  
+   
     return (
-      <div className="max-w-4xl bg-white rounded-lg shadow p-16">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-lg font-semibold">Recent Tasks Activities</h2>
-            <p className="text-sm text-gray-500">
-              Complete the tasks below to improve your rating
-            </p>
-          </div>
-          <a
-            href="#"
-            className="flex items-center gap-1 text-blue-600 hover:text-blue-500 text-sm font-medium"
-          >
-            See All Transactions <MdKeyboardArrowRight className='text-xl'/>
-          </a>
-        </div>
-        <div className="divide-y divide-gray-200">
-          {tasks.map((task, index) => (
-            <div key={index} className="flex items-center justify-between py-4">
-              <div className="flex items-center space-x-4">
-                <span
-                  className={`flex items-center justify-center w-24 px-2 py-1 text-sm font-medium rounded-full ${task.statusColor}`}
-                >
-                  {task.status}
-                </span>
-                <div>
-                  <h3 className="font-medium">{task.title}</h3>
-                  <p className="text-sm text-gray-500">{task.subtitle}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{task.amount}</p>
-                <p className="text-sm text-gray-500">{task.date}</p>
-              </div>
-              <div className="hidden sm:block text-gray-500">{task.provider}</div>
-              <button className="ml-4 text-gray-500 hover:text-gray-700">
-                <span className="sr-only">Options</span>
-                ...
-              </button>
-            </div>
-          ))}
+      <div className="max-w-4xl bg-white p-16">
+        <div className="bg-white rounded-xl shadow-sm">
+          <FeaturedTask />
         </div>
       </div>
     );

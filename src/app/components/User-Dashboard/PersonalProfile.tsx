@@ -5,8 +5,9 @@ import Image from 'next/image';
 import profileImg from "../../../../public/assets/Ellipse68.png";
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { API_URL } from "@/lib/utils";
+import { toast } from 'react-toastify';
 
 interface Props {
   profileCompletion: string; // Accept from props
@@ -29,7 +30,9 @@ const PersonalProfile: React.FC<Props> = ({ profileCompletion }) => {
 
         setProfileData(data.profile || data.user || null);
       } catch (error) {
-        console.error("Profile fetch error:", error);
+         const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to update task status";
+        toast.error(message);
       }
     };
 
@@ -39,6 +42,7 @@ const PersonalProfile: React.FC<Props> = ({ profileCompletion }) => {
   if (!profileData) return null;
 
   const fullName = `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
+  
   const numericProfileCompletion = parseFloat(profileCompletion.replace('%', ''));
 
 

@@ -53,7 +53,7 @@ const Withdrawal: React.FC = () => {
                             <Image src={currentBalIcon} alt="icon" width={20} height={20} />
                             <span className="font-medium text-sm">Current Wallet Balance</span>
                         </div>
-                        <p className="text-2xl font-bold mt-2">£123,456.00</p>
+                        <p className="text-2xl font-bold mt-2">$123,456.00</p>
                     </div>
 
                     <div className="bg-gradient-to-br from-[#E9E9E9] to-[#fff] px-6 py-8 rounded-lg shadow-500">
@@ -61,7 +61,7 @@ const Withdrawal: React.FC = () => {
                             <Image src={totalBalIcon} alt="icon" width={20} height={20} />
                             <span className="text-[#898989] font-medium text-sm">Total Spent on Tasks</span>
                         </div>
-                        <p className="text-2xl font-bold text-black mt-2">£1,234,567.00</p>
+                        <p className="text-2xl font-bold text-black mt-2">$1,234,567.00</p>
                     </div>
                 </div>
 
@@ -87,7 +87,7 @@ const Withdrawal: React.FC = () => {
                          transform -translate-y-[60%] -translate-x-1/2 pointer-events-none border-[5px] border-white shadow-200"
                             style={{ left: `${percentage}%` }}
                         >
-                            £{amount.toLocaleString()}
+                            ${amount.toLocaleString()}
                         </div>
                         <input
                             id="slider"

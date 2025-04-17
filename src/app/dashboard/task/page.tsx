@@ -18,6 +18,7 @@ import { MdDoneAll, MdFilterList, MdPendingActions } from "react-icons/md";
 import { toast } from "react-toastify";
 import { IoIosSearch } from "react-icons/io";
 import TaskDetails from "@/app/components/Tasks_Components/TaskDetails";
+import { AxiosError } from "axios";
 
 interface TaskApplication {
   _id: string;
@@ -52,6 +53,7 @@ const Task: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskData, setTaskData] = useState<TaskApplication | null>(null);
+  const [loadingApp, setLoadinApp] = useState(false);
 
   useScrollToTop(page);
 
@@ -70,15 +72,30 @@ const Task: React.FC = () => {
   };
 
   const fetchTasks = async () => {
+    const payload = {
+      page: tablepage,
+      limit: 12
+    }
+
+    setLoadinApp(true)
+
     try {
-      const response = await api.post(`${API_URL}/api/v1/tasks/applications/earner`);
+      const response = await api.post(`${API_URL}/api/v1/tasks/applications/earner`, payload);
       const data = response.data.data;
       setTasksApplications(data || []);
-      setApplicationtotalPages(data?.pagination?.totalPages || 1);
+      setApplicationtotalPages(response?.data?.pagination?.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch applications";
+        toast.error(message);
+      }finally{
+      setLoadinApp(false);
     }
   };
+
+  useEffect(() => {
+    fetchTasks();
+  }, [tablepage])
 
   const fetchTasksQuery = async () => {
     try {
@@ -107,8 +124,10 @@ const Task: React.FC = () => {
       setTasksApplications(data || []);
       setApplicationtotalPages(data?.pagination?.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-    }
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch tasks";
+        toast.error(message);    
+      }
   };
 
   useEffect(() => {
@@ -135,7 +154,6 @@ const Task: React.FC = () => {
         fetchTasks();
       }
     } catch (error) {
-      console.error("Error updating task status:", error);
       toast.error("Failed to update task status");
     }
   };
@@ -225,7 +243,15 @@ const Task: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {tasksApplications.length > 0 ? (
+                {loadingApp ? (
+                    <tr>
+                    <td colSpan={6} className="text-center py-4">
+                      <div className="flex justify-center items-center w-full">
+                        <FaSpinner className="animate-spin text-blue-500 text-3xl" />
+                      </div>
+                    </td>
+                  </tr>
+                ) : tasksApplications.length > 0 ? (
                   tasksApplications.map((application) => {
                     const { _id, taskId, earnerStatus } = application;
                     return (
@@ -237,7 +263,7 @@ const Task: React.FC = () => {
                             </div>
                             <div className="ml-2">
                               <div className="font-medium text-gray-800">{taskId?.title}</div>
-                              <div className="text-gray-400 text-xs">20kb</div>
+                              {/* <div className="text-gray-400 text-xs">20kb</div> */}
                             </div>
                           </div>
                         </td>
@@ -268,7 +294,7 @@ const Task: React.FC = () => {
                           </button>
 
                           {activeMenu === _id && (
-                            <div className="absolute right-0 mt-2 w-[274px] bg-[#FFFFFF] rounded-lg shadow-lg border p-2 z-50">
+                            <div className="absolute right-32 -top-20 mt-2 w-[274px] bg-[#FFFFFF] rounded-lg shadow-lg border p-2 z-50">
                               <button
                                 className="flex items-center gap-2 text-blue-600 w-full px-3 py-2 hover:bg-blue-50 rounded-md"
                                 onClick={() => handleViewTask(application)}

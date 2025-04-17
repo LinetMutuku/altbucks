@@ -6,6 +6,8 @@ import Header from "@/app/components/Tasks_Components/Header";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdFilterList } from "react-icons/md";
 import api from "@/lib/api";
+import { AxiosError } from "axios";
+import { toast } from "react-toastify";
 
 interface Compensation {
   currency: string;
@@ -61,6 +63,8 @@ const ApplicationsPage: React.FC = () => {
   const [responseData, setResponseData] = useState<TaskCardProps[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  
+
    const fetchData = async () => {
     try {
       const response = await api.post("/api/v1/tasks/applications/earner", {
@@ -69,8 +73,10 @@ const ApplicationsPage: React.FC = () => {
 
       setResponseData(response.data.data);
       setError(null);
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>;
+      const message = err.response?.data?.message || "Failed to fetch applications";
+      toast.error(message);
       setResponseData(null);
     }
   };
@@ -83,8 +89,6 @@ const ApplicationsPage: React.FC = () => {
     e.preventDefault();
     fetchData(); 
   };
-  
-  console.log("responseData",responseData)
 
   return (
     <>

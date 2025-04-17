@@ -13,9 +13,9 @@ export default function Banner() {
 
   const handleNavigate = () => {
     if(user?.isTaskCreator) {
-      router.push("/dashboard_taskcreator/task")
+      router.push("/dashboard_taskcreator")
     } else {
-      router.push("/dashboard/task")
+      router.push("/dashboard")
     }
   };
 

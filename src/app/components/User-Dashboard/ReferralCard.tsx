@@ -5,11 +5,12 @@ import money from "../../../../public/assets/money.png";
 import refsquare from "../../../../public/assets/refsquare.png";
 import sparkles from "../../../../public/assets/sparkles.png";
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 
 const ReferralCard = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText('https://loremipsum/referral?Adam103eE-2');
-    alert('Referral link copied!');
+    toast.success('Referral link copied!');
   };
 
   return (
@@ -63,7 +64,7 @@ const ReferralCard = () => {
 
       {/* Description Section */}
       <p className="text-gray-500 text-sm text-center mt-2 font-mulish">
-        Click the code below to copy and send to your referrals and you can both earn £20 each
+        Click the code below to copy and send to your referrals and you can both earn $20 each
       </p>
 
       {/* Referral Code Section */}

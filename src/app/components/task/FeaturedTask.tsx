@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import TaskDetails from "../Tasks_Components/FeaturedTask";
 import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 export default function FeaturedTask() {
   const {user} = useAuthStore();
@@ -41,8 +42,10 @@ export default function FeaturedTask() {
         }
 
         setTasks(response.data.data);
-      } catch (err: any) {
-        setError(err.message || "Error fetching tasks");
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to update task status";
+        toast.error(message);      
       } finally {
         setLoading(false);
       }
@@ -101,8 +104,9 @@ export default function FeaturedTask() {
         setShowMiniModalId(null);
       }      
     } catch (error) {
-      console.error("Error updating task status:", error);
-      toast.error("Failed to update task status");
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to update task status";
+        toast.error(message);
     }
   };
 

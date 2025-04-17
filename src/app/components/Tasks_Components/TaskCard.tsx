@@ -1,5 +1,6 @@
 import { TaskApplication } from "@/interface/TaskApplication";
-import React from "react";
+import React, { useState } from "react";
+import TaskDetails from "@/app/components/Tasks_Components/FeaturedTask";
 
 interface TaskCardProps {
   taskApplication?: TaskApplication;
@@ -8,7 +9,8 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
 
   const taskId = taskApplication?.taskId;
-  const earnerStatus = taskApplication?.earnerStatus || "Pending"; 
+  const earnerStatus = taskApplication?.earnerStatus || "Pending";
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     title,
@@ -32,6 +34,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
     Pending: "text-yellow-500",
     "In Progress": "text-blue-500",
     Completed: "text-green-500",
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -81,6 +87,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
           View Task
         </button>
       </div>
+      <TaskDetails 
+            isOpen={isModalOpen} 
+            onClose={handleClose} 
+            task={taskId || null} 
+          />
     </div>
   );
 };

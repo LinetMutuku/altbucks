@@ -33,7 +33,7 @@ export default function Header() {
                 isNavOpen ? "block" : "hidden"
                 }`}
             >
-                <div className="flex flex-col gap-8 md:flex-row items-center h-full p-4 md:p-0 md:p-0">
+                <div className="flex flex-col gap-8 md:flex-row items-center h-full p-4 md:p-0">
                 <div className="flex flex-col md:flex-row gap-3  items-start md:items-center">
                 <p className="text-sm text-gray-800 md:text-gray-600">
                     <Link href="/dashboard" className="text-sm tracking-wide">

@@ -13,7 +13,7 @@ import { Eye, EyeOff } from 'lucide-react';
 function SignUpPageContent() {
     //Get referralCode(if any)
     const searchParams = useSearchParams();
-    const referralCode = searchParams?.get("ref");
+    const referralCode = searchParams?.get("referralCode");
 
     const [userData, setUserData] = useState({
         firstName: "",

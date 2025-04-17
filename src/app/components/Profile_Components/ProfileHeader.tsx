@@ -5,6 +5,7 @@ import { CiStar } from "react-icons/ci";
 import { BsFillPatchCheckFill, BsGeoAlt } from "react-icons/bs";
 import { FaDatabase } from 'react-icons/fa';
 import { useProfileInformationStore } from '@/store/profileStore';
+import { useProfileStore } from '@/store/profileCompletionStore';
 
 // Define types for user data
 interface User {
@@ -26,7 +27,7 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
-    console.log("logged in user", user);
+    const { profileCompletion } = useProfileStore();
     
     // Get profile data from the store
     const {
@@ -77,22 +78,26 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
         });
     }, [user, firstName, lastName, bio, location]);
 
+
     // Calculate profile completion
-    const calculateProfileCompletion = () => {
-        if (!userData) return 0;
+    // const calculateProfileCompletion = () => {
+    //     if (!userData) return 0;
 
-        let completed = 0;
-        const fields = ['firstName', 'lastName', 'email', 'phoneNumber', 'bio', 'location'];
-        const totalFields = fields.length;
+    //     let completed = 0;
+    //     const fields = ['firstName', 'lastName', 'email', 'phoneNumber', 'bio', 'location'];
+    //     const totalFields = fields.length;
 
-        fields.forEach(field => {
-            if (userData[field as keyof User]) completed++;
-        });
+    //     fields.forEach(field => {
+    //         if (userData[field as keyof User]) completed++;
+    //     });
 
-        return Math.round((completed / totalFields) * 100);
-    };
+    //     return Math.round((completed / totalFields) * 100);
+    // };
 
-    const profileCompletion = calculateProfileCompletion();
+    const cleanCompletion = typeof profileCompletion === 'string'
+        ? parseFloat(profileCompletion)
+        : profileCompletion;
+
 
     return (
         <div className='w-full'>
@@ -138,7 +143,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
                     </div>
                     <div className='flex flex-col gap-2 sm:gap-3 w-full sm:w-[300px]'>
                         <div className='flex bg-gray-300 rounded-md h-[8px] sm:h-[10px] w-full'>
-                            <div className='bg-orange-500 h-full rounded-md' style={{ width: `${profileCompletion}%` }}></div>
+                            <div className='bg-orange-500 h-full rounded-md' style={{ width: `${cleanCompletion}%` }}></div>
                         </div>
                         <p className='text-blue-500 text-xs sm:text-sm'>Your Profile is <span>{profileCompletion}%</span> complete</p>
                     </div>

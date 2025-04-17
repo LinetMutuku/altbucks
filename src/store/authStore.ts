@@ -95,7 +95,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        const redirectUri = "https://altbucks-ipat.vercel.app/auth/callback";
+        const redirectUri = "https://alt-bucks.vercel.app/auth/callback";
       
         if (!clientId || !redirectUri) {
           console.error("Missing Google Client ID or Redirect URI.");
@@ -160,13 +160,6 @@ export const useAuthStore = create<AuthState>()(
         confirmPassword
       ) => {
         set({ isLoading: true, error: null });
-        console.log("obj to send",   email,
-          password,
-          firstName,
-          lastName,
-          referralCode,
-          phoneNumber,
-          confirmPassword)
         try {
           const { data } = await axios.post(`${API_URL}/users/earn`, {
             email,

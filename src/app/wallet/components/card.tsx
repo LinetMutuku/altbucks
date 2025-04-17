@@ -20,20 +20,20 @@ export default function CardComponent() {
       id: 1,
       icon: <MoneyAvailable />,
       title: "Money Available",
-      amount: ["£123,456.00", "All Time"],
+      amount: ["$123,456.00", "All Time"],
       isHighlighted: true, // Added property to identify the first card
     },
     {
       id: 2,
       icon: <MoneyRecieved />,
       title: "Total Money Received",
-      amount: ["£1,234,567.00", "All Time"],
+      amount: ["$1,234,567.00", "All Time"],
     },
     {
       id: 3,
       icon: <MoneyWithdrawn />,
       title: "Total Money Withdrawn",
-      amount: ["£1,234,567.00", "All Time"],
+      amount: ["$1,234,567.00", "All Time"],
     },
   ];
 

@@ -15,7 +15,7 @@ const Cards = () => {
             </span>
             <span>Money Available</span>
           </div>
-          <p className='text-[24px] font-bold'>£123,456.00</p>
+          <p className='text-[24px] font-bold'>$123,456.00</p>
           <div className='flex items-center gap-2 w-[40%]'>
             <button className='border text-[8px] font-medium p-1 rounded-md w-[50%]'>
               Today
@@ -32,7 +32,7 @@ const Cards = () => {
             </span>
             <span className='text-[#898989]'>Total Money Received</span>
           </div>
-          <p className='text-[24px] font-bold text-black'>£1,123,456.00</p>
+          <p className='text-[24px] font-bold text-black'>$1,123,456.00</p>
           <div className='flex items-center gap-2 w-[40%]'>
             <button className='border border-[#A0A0A0] bg-white text-[#A0A0A0] text-[8px] font-medium p-1 rounded-md w-[50%]'>
               Today
@@ -49,7 +49,7 @@ const Cards = () => {
             </span>
             <span className='text-[#898989]'>Total Money Received</span>
           </div>
-          <p className='text-[24px] font-bold text-black'>£1,123,456.00</p>
+          <p className='text-[24px] font-bold text-black'>$1,123,456.00</p>
           <div className='flex items-center gap-2 w-[40%]'>
             <button className='border border-[#A0A0A0] bg-white text-[#A0A0A0] text-[8px] font-medium p-1 rounded-md w-[50%]'>
               Today

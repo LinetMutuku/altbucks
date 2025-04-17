@@ -18,7 +18,7 @@ interface AccountSettingsStore {
 interface ProfileInformationStore {
     avatar: File | null;
     bio: string;
-    languages: string[];
+    languages: string;
     expertise: string;
     firstName: string;
     lastName: string;
@@ -28,7 +28,7 @@ interface ProfileInformationStore {
 
     setAvatar: (avatar: File | null) => void;
     setBio: (bio: string) => void;
-    setLanguages: (languages: string[]) => void;
+    setLanguages: (languages: string) => void;
     setExpertise: (expertise: string) => void;
     setFirstName: (firstName: string) => void;
     setLastName: (lastName: string) => void;
@@ -107,7 +107,7 @@ export const useAccountSettingsStore = create<AccountSettingsStore>((set, get) =
 export const useProfileInformationStore = create<ProfileInformationStore>((set, get) => ({
     avatar: null,
     bio: '',
-    languages: [],
+    languages: '',
     expertise: '',
     firstName: '',
     lastName: '',
@@ -144,7 +144,7 @@ export const useProfileInformationStore = create<ProfileInformationStore>((set, 
                 formData.append('avatar', avatar);
             }
             formData.append('bio', bio);
-            formData.append('languages', JSON.stringify(languages));
+            formData.append('languages', languages);
             formData.append('expertise', expertise);
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);

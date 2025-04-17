@@ -40,8 +40,12 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
   const fetchInvitedUsers = async () => {
     if (!token) return;
     setIsFetchingUsers(true);
+
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0); 
+
     try {
-      const response = await api.get(`${API_URL}/api/v1/referrals/`);
+      const response = await api.get(`${API_URL}/api/v1/referrals/?fromDate=${date.toISOString()}`);
       const data = response.data;
       if (Array.isArray(data?.data)) {
         setInvitedUsers(data.data);
@@ -78,9 +82,7 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
     setMessage("");
 
     try {
-      const response = await api.post(`${API_URL}/api/v1/referrals/invite`, {
-        body: JSON.stringify({ email: inviteEmail }),
-      });
+      const response = await api.post(`${API_URL}/api/v1/referrals/invite`, {email: inviteEmail});
 
       if (response) {
         setMessage("Invite sent successfully!");
@@ -186,28 +188,32 @@ const ReferralInvite: React.FC<ReferralInviteProps> = ({ referralLink, isOpen, o
             {isFetchingUsers ? (
               <p className="text-gray-500">Loading invited users...</p>
             ) : invitedUsers.length > 0 ? (
-              invitedUsers.map((person, index) => (
-                <div key={index} className="flex justify-between items-center border-b py-2">
-                  <div>
-                    <p className="font-medium">{person.name}</p>
-                    <p className="text-sm text-gray-500">{person.email}</p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-md text-xs ${
-                      person.status === "Invite accepted"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-yellow-100 text-yellow-600"
-                    }`}
+              <div className="max-h-[200px] overflow-y-auto border rounded-md"> 
+                {invitedUsers.map((person, index) => (
+                  <div 
+                    key={index} 
+                    className="flex justify-between items-center border-b p-3 hover:bg-gray-50"
                   >
-                    {person.status}
-                  </span>
-                </div>
-              ))
+                    <div>
+                      <p className="font-medium">{person.name}</p>
+                      <p className="text-sm text-gray-500">{person.email}</p>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-md text-xs ${
+                        person.status === "Invite accepted"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-yellow-100 text-yellow-600"
+                      }`}
+                    >
+                      {person.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
             ) : (
               <p className="text-gray-500">No invitations sent yet.</p>
             )}
           </div>
-
           <p className="mt-4 text-gray-500 text-sm">
             <strong>{invitedUsers?.length || 0}</strong> People invited today so far <br />
             {(invitedUsers || []).filter((u) => u.status === "Invite accepted").length} invites have been accepted from your request

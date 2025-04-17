@@ -112,8 +112,6 @@ const AnalyticsDashboard = () => {
       const result = await response.json();
       setData(result.data);
     } catch (err: any) {
-      console.error("API Fetch Error:", err.message);
-      setError(err.message);
       toast.error("Failed to load analytics data");
     } finally {
       setLoading(false);

@@ -9,13 +9,14 @@ type User = {
     lastName?: string;
     bio?: string;
     expertise?: string;
-    languages?: string[] | string;
+    languages?: string;
     location?: string;
     photoURL?: string;
   };
   
   const ProfileInformation = ({ user }: { user: User | null }) => {
     const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
+
 
     // Get store actions and state - match function names with the store
     const {
@@ -33,36 +34,38 @@ type User = {
 
     // Initialize the store with user data when component mounts
     useEffect(() => {
+        const acceptedCountries = ['Nigeria', 'Rwanda', 'Kenya', 'United States', 'Spain', 'France'];
+        const allowedLanguages = ["English", "French", "Spanish", "German", "Chinese"];
+    
         if (user) {
             if (user.firstName) setFirstName(user.firstName);
             if (user.lastName) setLastName(user.lastName);
             if (user.bio) setBio(user.bio);
             if (user.expertise) setExpertise(user.expertise);
-
+    
             // Handle language initialization
-            if (user.languages) {
-                if (typeof user.languages === 'string') {
-                    setLanguages([user.languages]); // Pass as array
-                } else if (Array.isArray(user.languages) && user.languages.length > 0) {
-                    setLanguages(user.languages); // Pass the array directly
-                }
+            if (user.languages && allowedLanguages.includes(user.languages)) {
+                setLanguages(user.languages);
+            } else {
+                setLanguages('');
             }
-
-            if (user.location) setLocation(user.location);
+    
+            // ✅ Only accept valid countries
+            if (user.location && acceptedCountries.includes(user.location)) {
+                setLocation(user.location);
+            } else {
+                setLocation('');
+            }
         }
-    }, [user]);
+    }, []);
+    
 
     // Allowed values
     const allowedLanguages = ["English", "French", "Spanish", "German", "Chinese"];
     const allowedExpertise = ["Web Development", "Content Writing", "DevOps", "UI/UX Design"];
-    const locations = [
-        "New York, USA", "Los Angeles, USA", "Chicago, USA", "Houston, USA",
-        "Texas, USA", "London, UK", "Manchester, UK", "Toronto, Canada",
-        "Sydney, Australia", "Melbourne, Australia", "Berlin, Germany",
-        "Paris, France", "Madrid, Spain", "Tokyo, Japan", "Singapore",
-        "Mumbai, India", "Nairobi, Kenya", "Lagos, Nigeria",
-        "Cape Town, South Africa", "Mexico City, Mexico"
-    ];
+
+    const locations = ['Nigeria', 'Rwanda', 'Kenya', 'United States', 'Spain', 'France'];
+
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]; // Use optional chaining in case it's null
@@ -92,9 +95,9 @@ type User = {
     
 
     // Handle language change - convert single value to array
-    const handleLanguageChange = (e: { target: { value: any; }; }) => {
+    const handleLanguageChange = (e: { target: { value: string }; }) => {
         const value = e.target.value;
-        setLanguages(value ? [value] : []); // Pass as array
+        setLanguages(value || ''); // Pass as array
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

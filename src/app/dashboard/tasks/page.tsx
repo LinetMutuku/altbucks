@@ -11,6 +11,7 @@ import Pagination from "@/app/components/Pagination/Pagination";
 import { FaSpinner } from "react-icons/fa";
 import api from "@/lib/api";
 import { Filters } from "@/interface/Filter";
+import { toast } from "react-toastify";
 
 interface Pagination {
   page: number;
@@ -77,8 +78,7 @@ const Tasks: React.FC = () => {
       const pagination = response.data.pagination.totalPages; 
       setTotalPages(pagination)
     } catch (error: any) {
-      console.error("Error fetching tasks:", error);
-      setError(
+      toast.error(
         error?.response?.data?.message ||
         "Something went wrong while fetching tasks. Please try again later."
       );

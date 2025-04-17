@@ -13,13 +13,16 @@ import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { FaSpinner } from "react-icons/fa";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
+import { useProfileStore } from "@/store/profileCompletionStore";
 
 interface OverviewData {
   cancelledTasks: number;
   completedTasks: number;
   pendingTasks: number;
   inProgressTasks: number;
-  profileCompletion: string;
+  profileCompletion: any;
   totalEarnings: number;
 }
 
@@ -45,8 +48,10 @@ export default function Dashboard() {
       try {
         const response = await api.get("/api/v1/dashboard/overview/earner");
         setOverviewData(response.data?.data || null);
-      } catch (err) {
-        console.error("Failed to fetch overview:", err);
+      } catch (error) {
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch overview";
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -55,6 +60,8 @@ export default function Dashboard() {
     fetchOverviewData();
   }, []);
 
+  useProfileStore.getState().setProfileCompletion(overviewData?.profileCompletion || "0")
+  
   const handleButtonClick = () => {
     router.push("/dashboard/task");
   };

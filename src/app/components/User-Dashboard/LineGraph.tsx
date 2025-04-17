@@ -13,6 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { jwtDecode, JwtPayload } from "jwt-decode";
+import { AxiosError } from "axios";
+import { toast } from "react-toastify";
 
 interface GraphData {
   date: string;
@@ -36,7 +38,6 @@ const LineChartComponent = () => {
   const [graphData, setGraphData] = useState<GraphData[]>([]);
   const [taskEarningReport, setTaskEarningReport] = useState<TaskEarningReport | null>(null);
 
-  // Fetch the data from the endpoint
   const fetchEarningsData = async (range: string) => {
     try {
       const response = await api.get(`${API_URL}/api/v1/dashboard/earnings?range=${range}`, {
@@ -45,7 +46,6 @@ const LineChartComponent = () => {
         },
       });
 
-      // Assuming the response data contains an array with 'date' and 'totalEarnings'
       const earningsData = response.data.data.map((item: { date: string, totalEarnings: number }) => ({
         date: item.date,
         amount: item.totalEarnings,
@@ -54,13 +54,14 @@ const LineChartComponent = () => {
       setGraphData(earningsData);
       setTaskEarningReport({
         allTime: earningsData.reduce((acc: any, curr: { amount: any; }) => acc + curr.amount, 0),
-        last30Days: 0, // Placeholder for the actual logic
-        last7Days: 0, // Placeholder for the actual logic
-        today: 0, // Placeholder for the actual logic
+        last30Days: 0,
+        last7Days: 0, 
+        today: 0, 
       });
     } catch (error) {
-      console.error("Error fetching earnings data:", error);
-    }
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch earnings";
+        toast.error(message);    }
   };
 
   useEffect(() => {
@@ -132,7 +133,8 @@ const LineChartComponent = () => {
   };
 
   // Handle Export PDF button click
-  const handleExportPdf = async () => {
+
+  const handleExportPdf = async (range: string) => {
     if (!userId) {
       alert("User ID not found.");
       return;
@@ -140,7 +142,7 @@ const LineChartComponent = () => {
 
     try {
       const response = await api.get(
-        `${API_URL}/api/v1/tasks/task-creator/dashboard?userId=${userId}&exportPdf=true`,
+        `${API_URL}/api/v1/dashboard/earnings/pdf?range=${range}`,
         {
           responseType: "blob",
           headers: {
@@ -165,10 +167,48 @@ const LineChartComponent = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error exporting PDF:", error);
-      alert("Failed to export PDF. Please try again.");
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch overview";
+        toast.error(message);
     }
   };
+  // const handleExportPdf = async () => {
+  //   if (!userId) {
+  //     alert("User ID not found.");
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await api.get(
+  //       `${API_URL}/api/v1/tasks/task-creator/dashboard?userId=${userId}&exportPdf=true`,
+  //       {
+  //         responseType: "blob",
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (!response.data) {
+  //       throw new Error("Failed to export PDF");
+  //     }
+
+  //     const blob = new Blob([response.data], { type: "application/pdf" });
+
+  //     // Create a download link and trigger the download
+  //     const url = window.URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = "task-report.pdf";
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     document.body.removeChild(a);
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (error) {
+  //     console.error("Error exporting PDF:", error);
+  //     alert("Failed to export PDF. Please try again.");
+  //   }
+  // };
 
   // If no data exists, show a message but keep the toggle
   return (
@@ -196,7 +236,7 @@ const LineChartComponent = () => {
               </button>
             ))}
             <button
-              onClick={handleExportPdf}
+              onClick={() => handleExportPdf(selectedPeriod)}
               className="flex items-center bg-gray-100 text-gray-600 px-6 py-2 rounded-md shadow hover:bg-gray-200"
             >
               <span className="mr-2">Export PDF</span>

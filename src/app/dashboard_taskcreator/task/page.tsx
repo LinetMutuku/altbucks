@@ -10,6 +10,8 @@ import api from "@/lib/api";
 import { API_URL } from "@/lib/utils";
 import Pagination from "@/app/components/Pagination/Pagination";
 import CreatorHeader from "@/app/components/Task_Creator_Dashboard/CreatorHeader";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 const Task: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -20,7 +22,8 @@ const Task: React.FC = () => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const [totalPages, setTotalPages] = useState(1);
-
+  const [tablepage, setTablePage] = useState(1);
+  
 
   // Fetch tasks
   const fetchTasks = async () => {
@@ -30,11 +33,12 @@ const Task: React.FC = () => {
       if (!response) throw new Error("Failed to fetch tasks");
 
       const data = response.data.data;
-      console.log("when u walk", data)
       setTasks(data || []);
       setTotalPages(data?.pagination?.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      const err = error as AxiosError<{ message: string }>;
+      const message = err.response?.data?.message || "Failed to fetch tasks";
+      toast.error(message);    
     }
   };
 
@@ -43,30 +47,47 @@ const Task: React.FC = () => {
   }, [page]); 
 
   // Fetch tasks from API based on filters & searchQuery
+ 
   const fetchTasksQuery = async () => {
     try {
-      const response = await api.post(`${API_URL}/api/v1/tasks/applications/creator`, {
-        search: searchQuery,
-        status: filterStatus,
-        page, 
-        limit: pageSize,
-      });
-
-      if (!response) throw new Error("Failed to fetch tasks");
-
+      // Create the payload object
+      const payload: Record<string, any> = {
+        page: tablepage,
+        limit: pageSize
+      };
+  
+      // Only add search if it has a value
+      if (searchQuery && searchQuery.trim() !== '') {
+        payload.search = searchQuery.trim();
+      }
+  
+      // Only add status if it has a value
+      if (filterStatus && filterStatus.trim() !== '') {
+        payload.status = filterStatus.trim();
+      }
+  
+      const response = await api.post(
+        `${API_URL}/api/v1/tasks/applications/creator`,
+        payload
+      );
+      
       const data = response.data.data;
       setTasks(data || []);
-      setTotalPages(data?.pagination?.totalPages || 1);
+      setTablePage(data?.pagination?.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-    }
+        const err = error as AxiosError<{ message: string }>;
+        const message = err.response?.data?.message || "Failed to fetch tasks";
+        toast.error(message);    
+      }
   };
 
   useEffect(() => {
-    if(searchQuery || filterStatus) {
+    if (searchQuery || filterStatus) {
       fetchTasksQuery();
+    } else {
+      fetchTasks();
     }
-  }, [searchQuery, filterStatus, page]); 
+  }, [searchQuery, filterStatus, tablepage]);
 
   return (
     <>

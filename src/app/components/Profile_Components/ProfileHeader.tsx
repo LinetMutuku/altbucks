@@ -15,7 +15,7 @@ interface User {
   location?: string;
   email?: string;
   phoneNumber?: string;
-  photoURL?: string;
+  userImageUrl?: string;
   tasksCompleted?: number;
   totalEarnings?: number;
   averageRating?: number;
@@ -61,11 +61,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
                 setImagePreview(e.target?.result as string);
             };
             reader.readAsDataURL(avatar);
-        } else if (user?.photoURL) {
+        } else if (user?.userImageUrl) {
             // For existing images from the backend
-            setImagePreview(user.photoURL);
+            setImagePreview(user.userImageUrl);
         }
-    }, [avatar, user?.photoURL]);
+    }, [avatar, user?.userImageUrl]);
 
     // Update user data when store values change
     useEffect(() => {

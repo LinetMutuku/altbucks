@@ -14,11 +14,13 @@ import api from "@/lib/api";
 import { API_URL } from "@/lib/utils";
 import CreatorHeader from "../components/Task_Creator_Dashboard/CreatorHeader";
 import ViewProfile from "../components/Task_Creator_Dashboard/ViewProfile";
+import FeaturedTaskCreator from "../components/task/FeaturedTaskCreator";
 
 interface DashboardData {
-  totalAmountSpent: number;
-  workInProgressTasks: number;
+  totalSpent: number;
+  inProgressTasks: number;
   completedTasks: number;
+  profileCompletion: string;
   spendingOverTime: {
     graphData: { date: string; amount: number }[];
     taskEarningReport: {
@@ -76,7 +78,7 @@ const Page: React.FC = () => {
           `${API_URL}/api/v1/tasks/task-creator/dashboard?userId=${userId}`
         );
         const data = await response.data;
-        setDashboardData(data.dashboardData);
+        setDashboardData(data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -88,7 +90,7 @@ const Page: React.FC = () => {
   }, [userId]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center">Loading your dashboard...</div>;
   }
 
   return (
@@ -97,25 +99,23 @@ const Page: React.FC = () => {
       <div className="flex justify-between w-[95%] mx-auto mt-10 overflow-x-hidden">
         <div className="w-[70%] flex flex-col gap-5">
           <TopSection />
-          {dashboardData && (
             <>
               <UserInformation
-                totalAmountSpent={dashboardData.totalAmountSpent}
-                workInProgressTasks={dashboardData.workInProgressTasks}
-                completedTasks={dashboardData.completedTasks}
+                totalAmountSpent={dashboardData?.totalSpent}
+                workInProgressTasks={dashboardData?.inProgressTasks}
+                completedTasks={dashboardData?.completedTasks}
               />
-              <UserChart
-                graphData={dashboardData.spendingOverTime.graphData}
+              {/* <UserChart
+                graphData={dashboardData?.spendingOverTime.graphData}
                 taskEarningReport={dashboardData.spendingOverTime.taskEarningReport}
-              />
+              /> */}
             </>
-          )}
-          <FeaturedTask />
+          <FeaturedTaskCreator />
         </div>
 
         <div className="w-[28%] flex flex-col gap-5 justify-start">
-          {user && <ViewProfile user={user} />}
-          <TaskTotal />
+          {user && <ViewProfile user={user} dashboardData={dashboardData} />}
+          <TaskTotal dashboardData={dashboardData}/>
           <WithdrawNow />
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { API_URL } from "@/lib/utils";
 
-const useTaskAnalytics = (selectedTab: number, range: "1y" | "30d" | "7d" | "today") => {
+const useTaskAnalytics = (selectedTab: number = 0, range: "1y" | "30d" | "7d" | "today" = "30d") => {
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -11,12 +11,12 @@ const useTaskAnalytics = (selectedTab: number, range: "1y" | "30d" | "7d" | "tod
     switch (selectedTab) {
       case 0:
         return `${API_URL}/api/v1/analytics/popular-tasks`; 
-        case 1:
+      case 1:
         return `${API_URL}/api/v1/analytics/worker-engagement?range=${range}`;
-        case 2:
+      case 2:
         return `${API_URL}/api/v1/analytics/task-duration?range=${range}`;
       default:
-        return "";
+        return `${API_URL}/api/v1/analytics/popular-tasks`; // Default to popular tasks
     }
   };
 
@@ -48,7 +48,7 @@ const useTaskAnalytics = (selectedTab: number, range: "1y" | "30d" | "7d" | "tod
     };
 
     fetchData();
-  }, [selectedTab, range]); // Include `range` in dependencies to refetch when it changes
+  }, [selectedTab, range]);
 
   return { analyticsData, loading, error };
 };

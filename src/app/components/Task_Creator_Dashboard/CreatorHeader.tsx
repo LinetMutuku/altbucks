@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useState } from 'react'
@@ -13,37 +13,47 @@ import { FaHandshake } from "react-icons/fa";
 import { FaBookOpenReader } from "react-icons/fa6";
 import { IoBagOutline } from "react-icons/io5";
 import { usePathname } from 'next/navigation'
+import { useAuthStore } from '@/store/authStore';
+import { FiLogOut } from "react-icons/fi";
 
 export default function CreatorHeader() {
     const router = useRouter();
-    const pathname = usePathname()
-    const [notificationModal, setNotificationModal] = useState(false)
+    const pathname = usePathname();
+    const { user, logout } = useAuthStore();
+    const [notificationModal, setNotificationModal] = useState(false);
+    
+    const handleLogout = () => {
+        logout();
+        router.push('/log-in');
+    };
+
   return (
     <div className='w-[96%] h-[100px] flex items-center'>
-
         <nav className='w-screen h-[80px] flex items-center'>
             <div className='h-fit w-[90%] mx-auto flex items-center justify-between'>
-                
+                <Link href={"/"}>
                 <div className='w-fit h-fit'>
                     <Image src={logoImg} alt='' className='w-[100px] aspect-auto'/>
                 </div>
+                </Link>
                 <div className='w-fit flex h-fit gap-4 items-center'>
-                    <Link href="/dashboard_taskcreator" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard" ? "bg-blue-500 text-white rounded-lg" :""}`}>
+                    <Link href="/dashboard_taskcreator" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator" ? "bg-blue-500 text-white rounded-lg" :""}`}>
                         Dashboard
                     </Link>
-                    <Link href="/dashboard_taskcreator/task" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard/tasks" ? "bg-blue-500 text-white rounded-lg" :""}`}>
+                    <Link href="/dashboard_taskcreator/task" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator/task" ? "bg-blue-500 text-white rounded-lg" :""}`}>
                         Tasks
                     </Link>
-                    <Link href="/dashboard_taskcreator/my_wallet" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard/my_wallet" ? "bg-blue-500 text-white rounded-lg" :""}`}>
+                    <Link href="/dashboard_taskcreator/my_wallet" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator/my_wallet" ? "bg-blue-500 text-white rounded-lg" :""}`}>
                         My Wallet
                     </Link>
-                    <Link href="/dashboard_taskcreator/analytics" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard/referral" ? "bg-blue-500 text-white rounded-lg" :""}`}>
+                    <Link href="/dashboard_taskcreator/analytics" className={`w-fit h-fit px-6 py-3 hover:bg-blue-500 hover:text-white hover:rounded-lg ${pathname === "/dashboard_taskcreator/analytics" ? "bg-blue-500 text-white rounded-lg" :""}`}>
                     Analytics
                     </Link>
                 </div>
 
                 <div className='flex items-center gap-4'>
-                    <div className='flex' onClick={() => setNotificationModal(!notificationModal)}><IoMdNotificationsOutline size={25} color='sky-blue' className='cursor-pointer relative'/>
+                    <div className='flex' onClick={() => setNotificationModal(!notificationModal)}>
+                        <IoMdNotificationsOutline size={25} color='sky-blue' className='cursor-pointer relative'/>
                         {
                             notificationModal &&
                             <div className='w-[300px] rounded-xl shadow-xl bg-white right-10 py-12 px-8 h-[350px] z-20 overflow-y-scroll flex flex-col gap-6 absolute top-[100px]'>
@@ -99,10 +109,28 @@ export default function CreatorHeader() {
                             </div>
                         }
                     </div>
-                    <div className='text-blue-300'>|</div>
-                    <Image src={profileImage} onClick={() => router.push("/profile") } 
-                        alt="" className='h-[50px] w-auto object-cover cursor-pointer rounded-full' 
-                        />
+                    
+                    {/* Logout Button */}
+                    <button 
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors"
+                        title="Logout"
+                    >
+                        <FiLogOut size={20} />
+                    </button>
+                    
+                    <Link href={"/profile"}>  
+                        <div className="w-9 h-9 rounded-full overflow-hidden cursor-pointer">
+                            <Image
+                                src={user?.userImageUrl || profileImage} 
+                                onClick={() => router.push("/profile") } 
+                                alt="" 
+                                height={36}
+                                width={36}
+                                className="object-cover w-9 h-9 "                     
+                            />
+                        </div>
+                    </Link>
                 </div>
             </div>
         </nav>

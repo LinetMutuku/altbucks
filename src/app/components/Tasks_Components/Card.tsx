@@ -43,6 +43,8 @@ const Card: React.FC = (props: any) => {
     setIsUpdateOpen(false);
   };
 
+  console.log("dt", taskData)
+
   return (
     <>
       <div className="border border-gray-300 font-Satoshi rounded-lg p-4 bg-white">
@@ -51,7 +53,7 @@ const Card: React.FC = (props: any) => {
             <div className="flex justify-between items-center">
               <h2 className="text-md font-base">{taskData.title}</h2>
               <p className="text-black text-xs opacity-60">
-                Posted: {formatDate(taskData.postedAt)}
+                Posted: {formatDate(taskData.createdAt)}
               </p>
             </div>
             <p className="text-gray-500 text-sm mb-1">{taskData.taskType}</p>

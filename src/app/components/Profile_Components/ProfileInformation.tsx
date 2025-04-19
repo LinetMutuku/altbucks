@@ -11,11 +11,11 @@ type User = {
     expertise?: string;
     languages?: string;
     location?: string;
-    photoURL?: string;
+    userImageUrl?: string;
   };
   
   const ProfileInformation = ({ user }: { user: User | null }) => {
-    const [imagePreview, setImagePreview] = useState(user?.photoURL || null);
+    const [imagePreview, setImagePreview] = useState(user?.userImageUrl || null);
 
 
     // Get store actions and state - match function names with the store
@@ -31,6 +31,8 @@ type User = {
         isLoading,
         error
     } = useProfileInformationStore();
+
+    console.log("user", user)
 
     // Initialize the store with user data when component mounts
     useEffect(() => {
@@ -157,12 +159,13 @@ type User = {
                     <div>
                         <label className='block text-sm font-medium mb-1'>First Name</label>
                         <input
-                            type="text"
-                            defaultValue={user?.firstName || ''}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            className='w-full px-3 py-2 border border-gray-300 rounded-md'
-                            placeholder="First Name"
+                        type="text"
+                        value={useProfileInformationStore((state) => state.firstName)}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className='w-full px-3 py-2 border border-gray-300 rounded-md'
+                        placeholder="First Name"
                         />
+
                     </div>
                     <div>
                         <label className='block text-sm font-medium mb-1'>Last Name</label>
@@ -172,6 +175,7 @@ type User = {
                             onChange={(e) => setLastName(e.target.value)}
                             className='w-full px-3 py-2 border border-gray-300 rounded-md'
                             placeholder="Last Name"
+                            value={user?.lastName || ""}
                         />
                     </div>
                 </div>
@@ -219,7 +223,7 @@ type User = {
                     <div className='relative'>
                         <select
                             className='w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white'
-                            value={currentLanguage}
+                            defaultValue={user?.languages || ""}
                             onChange={handleLanguageChange}
                         >
                             <option value="">Languages Spoken</option>

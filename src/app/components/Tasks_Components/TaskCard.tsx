@@ -81,6 +81,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ taskApplication }) => {
       {/* View Task Button */}
       <div className="flex justify-end">
         <button
+        onClick={() => setIsModalOpen(true)}
           className="px-3 py-1 md:px-6 md:py-2 border border-[#2877EA] text-[#2877EA] rounded-md transition hover:bg-[#2877EA] hover:text-white"
           aria-label="View Task Details"
         >

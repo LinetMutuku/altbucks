@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { API_URL } from '@/lib/utils';
+import useTaskAnalytics from '@/hooks/useTaskAnalytics';
 
 // Dynamically import components with SSR disabled
 const AnalyticChart = dynamic(() => import('@/app/components/Task_Creator_Dashboard/AnalyticChart'), { 
@@ -64,20 +66,23 @@ const AnalyticsDashboard = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [popularTasks, setPopularTasks] = useState<any>(null);
-  const [workerEngagements, setWorkerEngagements] = useState<WorkerEngagementAnalytics | null>(null);
-  const [totalDuration, setTotalDuration] = useState<TotalDurationAnalytics | null>(null);
+  const [tabData, setTabData] = useState<{
+    popularTasks: any | null;
+    workerEngagements: WorkerEngagementAnalytics | null;
+    totalDuration: TotalDurationAnalytics | null;
+  }>({
+    popularTasks: null,
+    workerEngagements: null,
+    totalDuration: null
+  });
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const { analyticsData, loading: analyticsLoading, error: analyticsError } = useTaskAnalytics(selected, activeRange);
 
   // Initialize component (client-side only)
   useEffect(() => {
     setIsMounted(true);
-    
-    // Load saved tab selection
     const storedTab = localStorage.getItem("selectedTab") || "0";
     setSelected(Number(storedTab));
-
-    // Fetch initial data
     fetchAnalyticsOverview();
   }, []);
 
@@ -87,6 +92,59 @@ const AnalyticsDashboard = () => {
       localStorage.setItem("selectedTab", String(selected));
     }
   }, [selected, isMounted]);
+
+  // Handle tab content based on selection
+  // useEffect(() => {
+  //   if (!analyticsData) return;
+
+  //   // Clear all tab data first
+  //   setTabData({
+  //     popularTasks: null,
+  //     workerEngagements: null,
+  //     totalDuration: null
+  //   });
+
+  //   // Then set the data for the current tab
+  //   switch (selected) {
+  //     case 0:
+  //       setTabData(prev => ({ ...prev, popularTasks: analyticsData }));
+  //       break;
+  //     case 1:
+  //       setTabData(prev => ({ ...prev, workerEngagements: analyticsData }));
+  //       break;
+  //     case 2:
+  //       setTabData(prev => ({ ...prev, totalDuration: analyticsData }));
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }, [selected, analyticsData]);
+
+  useEffect(() => {
+    if (!analyticsData) return;
+
+    // Set the data for the current tab
+    switch (selected) {
+      case 0:
+        setTabData(prev => ({ ...prev, popularTasks: analyticsData }));
+        break;
+      case 1:
+        setTabData(prev => ({ 
+          ...prev, 
+          workerEngagements: analyticsData as WorkerEngagementAnalytics 
+        }));
+        break;
+      case 2:
+        setTabData(prev => ({ 
+          ...prev, 
+          totalDuration: analyticsData as TotalDurationAnalytics 
+        }));
+        break;
+      default:
+        break;
+    }
+  }, [selected, analyticsData]);
+
 
   const fetchAnalyticsOverview = async () => {
     setLoading(true);
@@ -98,44 +156,23 @@ const AnalyticsDashboard = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/analytics/overview`, {
+      const response = await fetch(`${API_URL}/api/v1/analytics/overview`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      setData(result.data);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      setData(await response.json());
     } catch (err: any) {
       toast.error("Failed to load analytics data");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
-  // Handle tab content based on selection
-  useEffect(() => {
-    if (!data) return;
-
-    switch (selected) {
-      case 0:
-        setPopularTasks(data.popularTasks);
-        break;
-      case 1:
-        setWorkerEngagements(data.workerEngagement);
-        break;
-      case 2:
-        setTotalDuration(data.taskDuration);
-        break;
-      default:
-        break;
-    }
-  }, [selected, data]);
+  
 
   if (!isMounted || loading) {
     return (
@@ -186,7 +223,7 @@ const AnalyticsDashboard = () => {
           {/* Performance Overview */}
           <div className="mb-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Task performance overview</h2>
-            {loading ? (
+            {/* {loading ? (
               <div className="flex justify-center items-center h-40">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
               </div>
@@ -194,7 +231,7 @@ const AnalyticsDashboard = () => {
               <div className="text-red-500 p-4 bg-red-50 rounded-lg">{error}</div>
             ) : (
               <TaskPerformanceTask analyticData={data} />
-            )}
+            )} */}
           </div>
 
           {/* Analytics Chart */}
@@ -233,90 +270,100 @@ const AnalyticsDashboard = () => {
               <div className="border-t border-gray-200 pt-6">
                 {/* Popular Task Analysis */}
                 {selected === 0 && (
-                  <div className="overflow-x-auto">
-                    <PopularTaskTable popularTasks={popularTasks} />
-                  </div>
+                   <div className="overflow-x-auto">
+                   <PopularTaskTable 
+                     popularTasks={tabData.popularTasks} 
+                     loading={analyticsLoading} 
+                     error={analyticsError}
+                   />
+                 </div>
                 )}
 
                 {/* Worker Engagement */}
                 {selected === 1 && (
-                  <div>
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                      <div>
-                        <p className="text-sm text-gray-500">Average worker per task</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-bold text-gray-900">
-                            {workerEngagements?.workerEngagements?.reduce((total, entry) => total + entry.count, 0) || 0}
-                          </span>
-                          <span className={`text-sm font-semibold ${
-                            (workerEngagements?.averageWorkerPerTask || 0) >= 0 
-                              ? 'text-green-600' 
-                              : 'text-red-600'
-                          }`}>
-                            {workerEngagements?.averageWorkerPerTask?.toFixed(1) || 0}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {["1y", "30d", "7d", "today"].map((period) => (
-                          <button
-                            key={period}
-                            className={`px-3 py-1.5 text-xs rounded-md border ${
-                              activeRange === period 
-                                ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' 
-                                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                            }`}
-                            onClick={() => setActiveRange(period as "1y" | "30d" | "7d" | "today")}
-                          >
-                            {period}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="h-[400px]">
-                      <BarChart workerEngagements={workerEngagements?.workerEngagements ?? []} />
-                    </div>
+            <div>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-500">Average worker per task</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-gray-900">
+                      {tabData.workerEngagements?.workerEngagements?.reduce(
+                        (total, entry) => total + entry.count, 0
+                      ) || 0}
+                    </span>
+                    <span className={`text-sm font-semibold ${
+                      (tabData.workerEngagements?.averageWorkerPerTask || 0) >= 0 
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {tabData.workerEngagements?.averageWorkerPerTask?.toFixed(1) || 0}%
+                    </span>
                   </div>
-                )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {["1y", "30d", "7d", "today"].map((period) => (
+                    <button
+                      key={period}
+                      className={`px-3 py-1.5 text-xs rounded-md border ${
+                        activeRange === period 
+                          ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' 
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setActiveRange(period as "1y" | "30d" | "7d" | "today")}
+                    >
+                      {period}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="h-[400px]">
+                <BarChart 
+                  workerEngagements={tabData.workerEngagements?.workerEngagements ?? []} 
+                />
+              </div>
+            </div>
+          )}
 
                 {/* Task Duration */}
                 {selected === 2 && (
-                  <div>
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                      <div>
-                        <p className="text-sm text-gray-500">Average completion time</p>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-bold text-gray-900">
-                            {totalDuration?.totalAverageDuration || 0}
-                          </span>
-                          <span className={`text-sm font-semibold ${
-                            (totalDuration?.percentageChange || 0) >= 0 
-                              ? 'text-green-600' 
-                              : 'text-red-600'
-                          }`}>
-                            {totalDuration?.percentageChange || 0}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {["1y", "30d", "7d", "today"].map((period) => (
-                          <button
-                            key={period}
-                            className={`px-3 py-1.5 text-xs rounded-md border ${
-                              activeRange === period 
-                                ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' 
-                                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                            }`}
-                            onClick={() => setActiveRange(period as "1y" | "30d" | "7d" | "today")}
-                          >
-                            {period}
-                          </button>
-                        ))}
+            <div>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-gray-500">Average completion time</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-gray-900">
+                      {tabData.totalDuration?.totalAverageDuration || 0}
+                    </span>
+                    <span className={`text-sm font-semibold ${
+                      (tabData.totalDuration?.percentageChange || 0) >= 0 
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {tabData.totalDuration?.percentageChange || 0}%
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {["1y", "30d", "7d", "today"].map((period) => (
+                    <button
+                      key={period}
+                      className={`px-3 py-1.5 text-xs rounded-md border ${
+                        activeRange === period 
+                          ? 'bg-blue-50 border-blue-200 text-blue-600 font-medium' 
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setActiveRange(period as "1y" | "30d" | "7d" | "today")}
+                    >
+                      {period}
+                    </button>
+                  ))}
                       </div>
                     </div>
                     <div className="h-[400px]">
-                      <TaskDuration workerEngagements={totalDuration?.averageDurations ?? []} />
-                    </div>
+                <TaskDuration 
+                  workerEngagements={tabData.totalDuration?.averageDurations ?? []} 
+                />
+              </div>
                   </div>
                 )}
               </div>

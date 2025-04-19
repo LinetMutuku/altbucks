@@ -15,14 +15,14 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
     const [title, setTitle] = useState("");
     const [taskType, setTaskType] = useState("");
     const [description, setDescription] = useState("");
-    const [location, setLocation] = useState("");
+    const [location] = useState("Remote");
     const [deadline, setDeadline] = useState("");
     const [requirements, setRequirements] = useState("");
     const [files, setFiles] = useState<File | null>(null);
     const [link1, setLink1] = useState("");
     const [link2, setLink2] = useState("");
     const [amount, setAmount] = useState<string>("");
-    const [currency, setCurrency] = useState<string>("USD");
+    const [currency] = useState<string>("USD");
     const [noOfRespondents, setNoOfRespondents] = useState<string>("")
     const [loading, setLoading] = useState(false);
 
@@ -131,10 +131,18 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                                 onChange={(e) => setTaskType(e.target.value)}
                                 required
                             >
-                                <option value="">Choose Task Type</option>
+                                 <option value="">Choose Task Type</option>
                                 <option value="Writing">Writing</option>
-                                <option value="Web Development">Review</option>
-                                <option value="Design">Delivery</option>
+                                <option value="Review">Review</option>
+                                <option value="Delivery">Delivery</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Design">Design</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Product">Product</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         <div>
@@ -175,7 +183,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
 
                     {/* Location, Compensation, and Deadline */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
+                        {/* <div>
                             <label htmlFor="location" className="block text-sm font-medium text-gray-700">
                                 Location Preference (Optional)
                             </label>
@@ -189,7 +197,7 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                                 <option value="Remote">Remote</option>
                                 <option value="Onsite">On-site</option>
                             </select>
-                        </div>
+                        </div> */}
                         <div>
                             <label htmlFor="compensation" className="block text-sm font-medium text-gray-700">
                                 Compensation
@@ -205,14 +213,14 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                                     onChange={(e) => setAmount(e.target.value)}
                                     required
                                 />
-                                <select
+                                {/* <select
                                     className="ml-2 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                     value={currency}
                                     onChange={(e) => setCurrency(e.target.value)}
                                 >
                                     <option value="USD">USD</option>
                                     <option value="EUR">EUR</option>
-                                </select>
+                                </select> */}
                             </div>
                         </div>
                         <div>
@@ -291,11 +299,12 @@ const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onClose }) => {
                         </div>
                         <div>
                             <label htmlFor="link2" className="block text-sm font-medium text-gray-700">
-                                Link Uploads (2)
+                                FeedBack Form
                             </label>
                             <input
                                 type="url"
                                 id="link2"
+                                required
                                 placeholder="Add file URL"
                                 className="mt-1 p-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
                                 value={link2}

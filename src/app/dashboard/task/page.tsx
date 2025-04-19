@@ -317,7 +317,7 @@ const Task: React.FC = () => {
                                 className="flex items-center gap-2 text-red-500 w-full px-3 py-2 hover:bg-red-50 rounded-md"
                                 onClick={() => updateTaskStatus(_id, taskId._id, "Cancelled")}
                               >
-                                <FaTrashAlt className="text-lg" /> Reject Task
+                                <FaTrashAlt className="text-lg" /> Cancel Task
                               </button>
                             </div>
                           )}

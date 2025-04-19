@@ -10,7 +10,7 @@ import { API_URL } from "@/lib/utils";
 import { toast } from 'react-toastify';
 
 interface Props {
-  profileCompletion: string; // Accept from props
+  profileCompletion: string; 
 }
 
 const PersonalProfile: React.FC<Props> = ({ profileCompletion }) => {
@@ -50,14 +50,14 @@ const PersonalProfile: React.FC<Props> = ({ profileCompletion }) => {
     <div className="w-full bg-white rounded-xl shadow-sm p-4">
       <div className="flex flex-col items-center">
         {/* Avatar */}
-        <div className="relative w-24 h-24 flex justify-center items-center mb-4">
-          <div className="absolute w-20 h-20 bg-green-500 rounded-full opacity-20"></div>
+        <div className="relative w-24 h-24 flex justify-center items-center mb-4 rounded-full overflow-hidden">
+        <div className="absolute w-20 h-20 rounded-full opacity-20 bg-gray-300"></div>
           <Image
-            src={profileData.photoURL || profileData.profilePicture || profileImg}
+            src={profileData.userImageUrl ? profileData.userImageUrl : profileImg}
             alt="User Profile"
-            width={70}
-            height={70}
-            className="rounded-full z-10"
+            width={96}
+            height={96}
+            className="rounded-full z-10 object-cover"
           />
         </div>
 

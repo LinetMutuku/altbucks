@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/lib/api";
 import { API_URL } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -78,29 +79,24 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
             formData.append("requirements", requirements);
             formData.append("link1", link1);
             formData.append("link2", link2);
-            formData.append("amount", amount);
-            formData.append("currency", JSON.stringify(currency));
+            formData.append("compensation", JSON.stringify({ currency, amount }));
+            // formData.append("currency", JSON.stringify(currency));
             formData.append("noOfRespondents", noOfRespondents);
             if (files) {
                 formData.append("files", files);
             }
 
-            const response = await fetch(
-                `${API_URL}/api/v1/tasks/update/${taskId}`,
-                {
-                    method: "PUT",
-                    body: formData,
-                    credentials: "include",
-                }
-            );
+            const response = await api.patch(
+                `${API_URL}/api/v1/tasks/${taskId}`, formData);
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-                throw new Error(errorData?.message || "Failed to update task");
-            }
+            console.log(response.data)
 
-            const responseData = await response.json();
-            console.log("Update successful:", responseData);
+            // if (!response.ok) {
+            //     const errorData = await response.json().catch(() => null);
+            //     throw new Error(errorData?.message || "Failed to update task");
+            // }
+
+            // const responseData = await response.json();
 
             const updatedTask = {
                 ...task,
@@ -191,9 +187,17 @@ const UpdateTaskForm = ({ onClose, task, onUpdate }: UpdateTaskFormProps) => {
                                 required
                             >
                                 <option value="">Choose Task Type</option>
-                                <option value="writing">Writing</option>
-                                <option value="review">Review</option>
-                                <option value="delivery">Delivery</option>
+                                <option value="Writing">Writing</option>
+                                <option value="Review">Review</option>
+                                <option value="Delivery">Delivery</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="Design">Design</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Product">Product</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
 

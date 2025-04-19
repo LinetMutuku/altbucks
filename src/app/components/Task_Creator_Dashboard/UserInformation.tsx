@@ -22,7 +22,7 @@ const UserInformation: React.FC<UserInformationProps> = ({
             </div>
             <div className='flex flex-col gap-1'>
                 <p className='text-gray-400 text-xs'>Amount Spent</p>
-                <h2 className='text-gray-800 font-bold text-xl'>${totalAmountSpent}</h2>
+                <h2 className='text-gray-800 font-bold text-xl'>${totalAmountSpent?.toLocaleString()}</h2>
             </div>
         </div>
 

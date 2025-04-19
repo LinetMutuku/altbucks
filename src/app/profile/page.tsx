@@ -1,27 +1,42 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import Header from "../components/User-Dashboard/Header";
+// import Header from '../../components/Dashboard_Components/Header';
+import Header from '../components/Dashboard_Components/Header';
+import CreatorHeader from "@/app/components/Task_Creator_Dashboard/CreatorHeader";
 import ProfileHeader from '../components/Profile_Components/ProfileHeader';
 import ProfileInformation from '../components/Profile_Components/ProfileInformation';
 import AccountSettings from '../components/Profile_Components/AccountSettings';
+import api from '@/lib/api';
 
 export default function ProfilePage() {
     const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState('profile');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    useEffect(() => {
+        const fetchUserState = async () => {
+            try{
+                const response = await api.get("/users/profile");
+                console.log(response.data);
+            }catch(error) {
+                console.error("error", error)
+            }
+        };
 
-    // useEffect(() => {
-    //     profileAuth();
-    // }, [profileAuth]);
+        fetchUserState();
+    },[])
 
     return (
         <div className='min-h-screen w-full flex flex-col bg-white font-mulish overflow-x-hidden'>
             {/* Header with shadow for better visual hierarchy */}
             <div className="bg-white border-b border-gray-300 sticky top-0 z-50 shadow-sm">
+                {user?.isTaskCreator ? (
+                <CreatorHeader />
+                ) : (
                 <Header />
+                )}
             </div>
 
             <div className='container mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-grow'>

@@ -11,13 +11,23 @@ import { BiMessageRoundedDots } from 'react-icons/bi';
 import { FaHandshake } from 'react-icons/fa';
 import { FaBookOpenReader } from 'react-icons/fa6';
 import { IoBagOutline } from 'react-icons/io5';
+import { useAuthStore } from '@/store/authStore';
+import { FiLogOut } from 'react-icons/fi';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
-    const pathname = usePathname()
-    const [notificationModal, setNotificationModal] = useState(false)
-    const [isSubNavOpen, setIsSubNavOpen] = useState(false)
+    const { user, logout } = useAuthStore();
+    const pathname = usePathname();
+    const router = useRouter();
+    const [notificationModal, setNotificationModal] = useState(false);
+    const [isSubNavOpen, setIsSubNavOpen] = useState(false);
         
+    const handleLogout = () => {
+        logout();
+        router.push('/log-in');
+    };
     
+        
   return (
     <nav className='w-[100%] h-[80px] flex items-center'>
         <div className='h-fit w-[90%] mx-auto flex items-center justify-between '>
@@ -107,15 +117,26 @@ export default function Header() {
                         </div>
                     }
                 </div>
-            <p className="text-gray-400">|</p>
+                
+               {/* Logout Button */}
+                <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-gray-600 hover:text-red-500 transition-colors"
+                    title="Logout"
+                >
+                    <FiLogOut size={20} />
+                </button>
+                                
             <Link href="/profile">
+            <div className="w-9 h-9 rounded-full overflow-hidden">
                 <Image
-                src={avatarImg}
-                alt="Profile"
-                width={36}
-                height={36}
-                className="rounded-full object-cover cursor-pointer"
+                    src={user?.userImageUrl || avatarImg}
+                    alt="Profile"
+                    width={36}
+                    height={36}
+                    className="object-cover"
                 />
+                </div>
             </Link>
             </div>
         </div>

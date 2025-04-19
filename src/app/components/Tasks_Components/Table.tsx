@@ -32,6 +32,10 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const toggleMenu = (taskId: string) => {
+    setMenuOpen(prev => prev === taskId ? null : taskId);
+  };
+
   const updateTaskStatus = async (task: TaskApplication, status: "Approved" | "Rejected" | "Pending") => {
     if (!task.taskId || !task._id) {
       toast.error("Invalid task or application ID");
@@ -47,9 +51,8 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
         setMenuOpen(null);
         toast.success(`Task status updated to ${status}`);
       }
-    } catch (error) {
-      console.error("Error updating task status:", error);
-      toast.error("Failed to update task status");
+    } catch (error: any) {
+      toast.error(`${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -76,7 +79,6 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
                 </div>
                 <div className="ml-2">
                   <div className="font-medium text-gray-800">{task.taskId?.title}</div>
-                  <div className="text-gray-400 text-xs">20kb</div>
                 </div>
               </td>
               <td className="px-4 py-2">{task.taskId?.taskType}</td>
@@ -94,36 +96,49 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
               </td>
               <td className="px-4 py-2">${task.taskId?.compensation?.amount}</td>
               <td className="px-4 py-2">
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-800">{task.email || "N/A"}</span>
-                <span className="text-gray-400 text-xs">{task.publicId || "N/A"}</span>
-              </div>
-            </td>
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-800">{task.email || "N/A"}</span>
+                  <span className="text-gray-400 text-xs">{task.publicId || "N/A"}</span>
+                </div>
+              </td>
               <td className="px-4 py-2 relative">
                 <button
-                  onClick={() => setMenuOpen(task._id)}
+                  onClick={() => toggleMenu(task._id)}
                   className="p-2 rounded-full hover:bg-gray-100"
                 >
                   <HiDotsVertical className="w-5 h-5 text-gray-600" />
                 </button>
                 {isMenuOpen === task._id && (
-                  <div ref={menuRef} className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border p-2 z-50">
+                  <div 
+                    ref={menuRef}
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border p-2 z-50"
+                  >
                     <button
                       onClick={() => {
                         setSelectedTask(task);
                         setModalOpen(true);
+                        setMenuOpen(null);
                       }}
                       className="flex items-center gap-2 text-blue-600 w-full px-3 py-2 hover:bg-blue-50 rounded-md"
                     >
                       <IoEyeSharp className="text-lg" /> View Task
                     </button>
-                    <button className="flex items-center gap-2 text-green-600 w-full px-3 py-2 hover:bg-green-50 rounded-md" onClick={() => updateTaskStatus(task, "Approved")}>
+                    <button 
+                      onClick={() => updateTaskStatus(task, "Approved")}
+                      className="flex items-center gap-2 text-green-600 w-full px-3 py-2 hover:bg-green-50 rounded-md"
+                    >
                       <MdDoneAll className="text-lg" /> Mark Task as Complete
                     </button>
-                    <button className="flex items-center gap-2 text-yellow-600 w-full px-3 py-2 hover:bg-yellow-50 rounded-md" onClick={() => updateTaskStatus(task, "Pending")}>
+                    <button 
+                      onClick={() => updateTaskStatus(task, "Pending")}
+                      className="flex items-center gap-2 text-yellow-600 w-full px-3 py-2 hover:bg-yellow-50 rounded-md"
+                    >
                       <MdPendingActions className="text-lg" /> Mark Task as Pending
                     </button>
-                    <button className="flex items-center gap-2 text-red-500 w-full px-3 py-2 hover:bg-red-50 rounded-md" onClick={() => updateTaskStatus(task, "Rejected")}>
+                    <button 
+                      onClick={() => updateTaskStatus(task, "Rejected")}
+                      className="flex items-center gap-2 text-red-500 w-full px-3 py-2 hover:bg-red-50 rounded-md"
+                    >
                       <FaTrashAlt className="text-lg" /> Reject Task
                     </button>
                   </div>
@@ -134,7 +149,11 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
         </tbody>
       </table>
       {isModalOpen && selectedTask && (
-        <TaskDetails isOpen={isModalOpen} onClose={() => setModalOpen(false)} task={selectedTask?.taskId} />
+        <TaskDetails 
+          isOpen={isModalOpen} 
+          onClose={() => setModalOpen(false)} 
+          task={selectedTask.taskId} 
+        />
       )}
     </div>
   );

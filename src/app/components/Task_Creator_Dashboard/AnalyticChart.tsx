@@ -92,8 +92,15 @@ const AnalyticChart = () => {
           </div>
         )}
 
+        {/* No Data State */}
+        {!loading && !error && data.length === 0 && (
+          <div className="flex justify-center items-center h-64 text-gray-500">
+            <p>No data to show</p>
+          </div>
+        )}
+
         {/* Line Chart */}
-        {!loading && !error && (
+        {!loading && !error && data.length > 0 && (
           <div className="mt-10 mb-1 h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart

@@ -11,6 +11,7 @@ interface User {
   lastName: string;
   phoneNumber?: string;
   isTaskCreator?: boolean;
+  userImageUrl?: string;
   referralCode?: string;
   [key: string]: any;
 }
@@ -67,7 +68,6 @@ export const useAuthStore = create<AuthState>()(
 
           if (response.data) {
             console.log(response.data)
-
             set({
               user: response.data.user || { email },
               isTaskCreator: response.data.data.isTaskCreator,
@@ -283,26 +283,30 @@ export const useAuthStore = create<AuthState>()(
       
 
       logout: async () => {
-        console.log("logged out")
-        // try {
-        //   await auth.signOut();
-        //   localStorage.removeItem("authToken");
-        //   localStorage.removeItem("firebaseToken");
-        //   document.cookie =
-        //     "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      
+        try {
+          // Clear tokens from storage
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("auth-storage");
+          localStorage.removeItem("profile-completion-storage");
 
-        //   set({
-        //     user: null,
-        //     isAuthenticated: false,
-        //     error: null,
-        //     isLoading: false,
-        //   });
-        // } catch (error: any) {
-        //   console.error("Logout error:", error);
-        //   set({ error: "Logout failed" });
-        //   throw error;
-        // }
-      },
+      
+          // Expire cookie
+          document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; secure; samesite=strict";
+      
+          // Reset user state
+          set({
+            user: null,
+            isAuthenticated: false,
+            error: null,
+            isLoading: false,
+          });
+      
+        } catch (error: any) {      
+          set({ error: "Logout failed" });
+          throw error;
+        }
+      }       
     }),
     {
       name: "auth-storage",
